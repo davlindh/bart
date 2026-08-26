@@ -1,0 +1,277 @@
+{
+  "domains": [
+    {
+      "id": "domain:trust",
+      "type": "Domain",
+      "domain": "Trust",
+      "label": "Trust Domain",
+      "properties": {
+        "description": "Security, identity, verification, reputation scores, and policy compliance."
+      }
+    },
+    {
+      "id": "domain:knowledge",
+      "type": "Domain",
+      "domain": "Knowledge",
+      "label": "Knowledge Domain",
+      "properties": {
+        "description": "Learning paths, documentation, training assets, and mentorship community."
+      }
+    },
+    {
+      "id": "domain:tools",
+      "type": "Domain",
+      "domain": "Tools",
+      "label": "Tools Domain",
+      "properties": {
+        "description": "Productivity, project management, workflows, and communication tools."
+      }
+    },
+    {
+      "id": "domain:exchange",
+      "type": "Domain",
+      "domain": "Exchange",
+      "label": "Exchange Domain",
+      "properties": {
+        "description": "Financial transactions, service catalogs, orders, and economic exchanges."
+      }
+    },
+    {
+      "id": "domain:interface",
+      "type": "Domain",
+      "domain": "Interactional Interface",
+      "label": "Interactional Interface Domain",
+      "properties": {
+        "description": "User experience, design systems, interactive components, and accessibility."
+      }
+    },
+    {
+      "id": "domain:operational",
+      "type": "Domain",
+      "domain": "Operational",
+      "label": "Operational Domain",
+      "properties": {
+        "description": "Infrastructure, data pipelines, backend workflows, and telemetry monitoring."
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "org:maskin_och_fritid",
+      "type": "Organization",
+      "domain": "Operational",
+      "label": "Maskin och Fritid AB",
+      "properties": {
+        "industry": "Equipment & Logistics",
+        "size": "ENTERPRISE",
+        "region": "Nordics"
+      }
+    },
+    {
+      "id": "team:platform_data",
+      "type": "Team",
+      "domain": "Operational",
+      "label": "Data Platform & Logistics Squad",
+      "properties": {
+        "purpose": "Deliver high-reliability telemetry, ETL pipelines, and operational decision support.",
+        "type": "CROSS_FUNCTIONAL"
+      }
+    },
+    {
+      "id": "team:data_engineering",
+      "type": "Team",
+      "domain": "Operational",
+      "label": "Data Engineering Team",
+      "properties": {
+        "purpose": "Maintain enterprise ETL pipelines, data lakes, and streaming pipelines."
+      }
+    },
+    {
+      "id": "person:user_a",
+      "type": "Person",
+      "domain": "Trust",
+      "label": "User A (Verifier & Creator)",
+      "properties": {
+        "role_title": "Compliance Verifier & Technical Educator",
+        "seniority": "SENIOR"
+      }
+    },
+    {
+      "id": "person:user_b",
+      "type": "Person",
+      "domain": "Data",
+      "label": "User B (Data Manager & Logistician)",
+      "properties": {
+        "role_title": "Data Operations Manager",
+        "seniority": "LEAD"
+      }
+    },
+    {
+      "id": "person:user_c",
+      "type": "Person",
+      "domain": "Trust",
+      "label": "User C (Security & Infrastructure Lead)",
+      "properties": {
+        "role_title": "Principal Security Architect",
+        "seniority": "PRINCIPAL"
+      }
+    },
+    {
+      "id": "person:user_d",
+      "type": "Person",
+      "domain": "Knowledge",
+      "label": "User D (Knowledge Curator & Data Steward)",
+      "properties": {
+        "role_title": "Data Governance Steward",
+        "seniority": "SENIOR"
+      }
+    },
+    {
+      "id": "node:role:decision_owner_042",
+      "type": "Role",
+      "domain": "Operational",
+      "label": "Decision Owner (Reporting SLA)",
+      "properties": {
+        "mandate": "Full authority for daily dispatch signoff (Decision X)",
+        "turnaround_days": 12,
+        "target_turnaround_days": 5,
+        "incidents": 3,
+        "decision_rights": ["Daily Dispatch Approval", "SLA Exception Signoff"]
+      }
+    },
+    {
+      "id": "node:process:data_pipeline_z",
+      "type": "DataPipeline",
+      "domain": "Operational",
+      "label": "Data Pipeline Z (Daily Ingestion)",
+      "properties": {
+        "failure_rate": "8%",
+        "incidents": 3,
+        "schedule": "05:00 UTC",
+        "avg_duration_minutes": 45,
+        "status": "DEGRADED"
+      }
+    },
+    {
+      "id": "node:process:queue_process_y",
+      "type": "Process",
+      "domain": "Operational",
+      "label": "Process Y (Validation Queue)",
+      "properties": {
+        "avg_queue_days": 4.2,
+        "bottleneck_factor": "High concurrency lock"
+      }
+    },
+    {
+      "id": "node:kpi:decision_time",
+      "type": "Metric",
+      "domain": "Operational",
+      "label": "KPI: Decision Turnaround Time",
+      "properties": {
+        "current_value": 12.0,
+        "target_value": 5.0,
+        "unit": "days",
+        "trend": "WORSENING"
+      }
+    },
+    {
+      "id": "node:decision:decision_x",
+      "type": "Decision",
+      "domain": "Operational",
+      "label": "Decision X (Logistics Dispatch Approval)",
+      "properties": {
+        "impact": "HIGH",
+        "regulatory": true
+      }
+    },
+    {
+      "id": "node:system:erp_export",
+      "type": "System",
+      "domain": "Operational",
+      "label": "ERP Central Export Service",
+      "properties": {
+        "export_latency_minutes": 35,
+        "version": "v4.2.1"
+      }
+    },
+    {
+      "id": "node:role:pipeline_maintainer",
+      "type": "Role",
+      "domain": "Operational",
+      "label": "Pipeline Reliability Engineer",
+      "properties": {
+        "on_call": true
+      }
+    },
+    {
+      "id": "node:asset:knowledge_etl_guide",
+      "type": "KnowledgeAsset",
+      "domain": "Knowledge",
+      "label": "ETL Idempotency & Recovery Playbook",
+      "properties": {
+        "verified": true,
+        "last_reviewed": "2026-06-15"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "team:platform_data",
+      "target": "org:maskin_och_fritid",
+      "rel_type": "BELONGS_TO"
+    },
+    {
+      "source": "person:user_b",
+      "target": "node:role:decision_owner_042",
+      "rel_type": "ASSIGNED_TO",
+      "properties": {"allocation_pct": 80.0}
+    },
+    {
+      "source": "node:role:decision_owner_042",
+      "target": "node:decision:decision_x",
+      "rel_type": "HAS_AUTHORITY",
+      "confidence": 1.0
+    },
+    {
+      "source": "node:role:decision_owner_042",
+      "target": "node:process:data_pipeline_z",
+      "rel_type": "DEPENDS_ON",
+      "confidence": 0.95
+    },
+    {
+      "source": "node:role:decision_owner_042",
+      "target": "node:process:queue_process_y",
+      "rel_type": "DEPENDS_ON",
+      "confidence": 0.90
+    },
+    {
+      "source": "node:role:decision_owner_042",
+      "target": "node:kpi:decision_time",
+      "rel_type": "MEASURED_BY",
+      "confidence": 1.0
+    },
+    {
+      "source": "node:process:data_pipeline_z",
+      "target": "node:system:erp_export",
+      "rel_type": "INGESTS_FROM",
+      "confidence": 0.98
+    },
+    {
+      "source": "node:process:data_pipeline_z",
+      "target": "node:role:pipeline_maintainer",
+      "rel_type": "MAINTAINED_BY",
+      "confidence": 0.92
+    },
+    {
+      "source": "node:role:pipeline_maintainer",
+      "target": "team:data_engineering",
+      "rel_type": "BELONGS_TO"
+    },
+    {
+      "source": "node:process:data_pipeline_z",
+      "target": "node:asset:knowledge_etl_guide",
+      "rel_type": "GOVERNED_BY",
+      "confidence": 0.85
+    }
+  ]
+}
