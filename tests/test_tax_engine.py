@@ -258,3 +258,55 @@ def test_tax_optimization_agent_lifecycle():
     assert "VMB" in result.diagnoses[0].issue_category
     assert result.metrics_summary["verified_tax_savings_sek"] == 2000.0
     assert result.metrics_summary["verified_profit_gain_sek"] == 2000.0
+
+
+def test_tax_optimization_agent_step_lifecycle():
+    """Verify granular step-by-step lifecycle execution for UI stepper."""
+    tx_payload = [
+        {
+            "transaction_id": "tx_step_test",
+            "source_system": "WORKSHOP_POS",
+            "description": "Robotgräsklippare VMB test",
+            "gross_amount": 16000.0,
+            "net_amount": 12800.0,
+            "current_vat_rate": 0.25,
+            "current_vat_amount": 3200.0,
+            "current_tax_rule": "MOMS_25",
+            "is_used_good": True,
+            "purchase_cost_ex_vat": 10000.0,
+            "bought_from_private_individual": True,
+        }
+    ]
+
+    packet = ContextResolver.resolve_context(
+        role="CFO",
+        purpose="Stegvis analys",
+        task="Testa interaktiv stepper",
+        target_entity={"transactions": tx_payload},
+    )
+
+    agent = TaxOptimizationAgent()
+    step1 = agent.run_step("observe", packet)
+    assert step1["step"] == "observe"
+    assert step1["count"] == 1
+
+    step2 = agent.run_step("analyze", packet)
+    assert step2["step"] == "analyze"
+    assert step2["data"]["opportunity_count"] == 1
+
+    step3 = agent.run_step("identify", packet)
+    assert step3["step"] == "identify"
+    assert len(step3["data"]) == 1
+
+    step4 = agent.run_step("propose", packet)
+    assert step4["step"] == "propose"
+    assert len(step4["data"]) == 1
+
+    step5 = agent.run_step("act", packet)
+    assert step5["step"] == "act"
+    assert len(step5["data"]) == 1
+
+    step6 = agent.run_step("evaluate", packet)
+    assert step6["step"] == "evaluate"
+    assert step6["data"]["verified_tax_savings_sek"] == 2000.0
+

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BART Omnipod | Spatial Decision Canvas & Tax Intelligence HUD</title>
+  <meta name="description" content="Autonomt multi-agent ramverk och dynamisk kontextmotor för svensk skatteoptimering, VMB, RUT, byggmoms och BAS-bokföring.">
+  
+  <!-- Modern Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="hud-root">
+  <!-- Left: Window Perspective Sidebar (W1–W9) -->
+  <nav class="window-sidebar" id="windowSidebar" aria-label="Omnipod Perspektivfönster">
+    <!-- Dynamically populated by app.js -->
+  </nav>
+
+  <div class="hud-container">
+    
+    <!-- Top HUD Control Bar -->
+    <header class="hud-header" id="hudHeader">
+      <div class="brand-group">
+        <div class="brand-badge">
+          <span class="brand-pulse"></span>
+          <span class="brand-title">BART OMNIPOD</span>
+        </div>
+        <span class="brand-tag">v2.0 • SPATIAL DECISION CANVAS</span>
+      </div>
+
+      <div class="header-controls">
+        <!-- Scenario Selector -->
+        <div class="control-item">
+          <label for="scenarioSelect">Scenario:</label>
+          <select id="scenarioSelect" class="hud-select">
+            <option value="mixed_q3">Trädgård & Maskinservice AB (Q3 Revision)</option>
+            <option value="vmb_fleet">Begagnatflotta Inbyten (VMB)</option>
+          </select>
+        </div>
+
+        <!-- Role Selector -->
+        <div class="control-item">
+          <label for="roleSelect">Aktiv Roll:</label>
+          <select id="roleSelect" class="hud-select">
+            <option value="CFO">CFO (Finansiell Strategi)</option>
+            <option value="Ekonomiansvarig">Ekonomiansvarig (Bokföring & Moms)</option>
+            <option value="Revisor">Revisor (Granskning & Efterlevnad)</option>
+            <option value="Säljare">Säljare (Prissättning & RUT)</option>
+            <option value="Verkstadschef">Verkstadschef (Inbyten & Verktyg)</option>
+          </select>
+        </div>
+
+        <!-- Perspective Window Indicator -->
+        <div class="perspective-pill" id="perspectiveBadge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          <span id="perspectiveWindowName">W5: Financial Management</span>
+        </div>
+
+        <!-- Scope Horizon Slider (D0 -> D3) -->
+        <div class="scope-control-group">
+          <div class="scope-labels">
+            <span>Scope Horizon:</span>
+            <span class="scope-active-val" id="scopeValueLabel">D1 (Direct)</span>
+          </div>
+          <div class="scope-slider-wrapper">
+            <input type="range" id="scopeSlider" min="0" max="3" step="1" value="1" class="scope-slider">
+            <div class="scope-ticks">
+              <span class="tick" data-val="0">D0</span>
+              <span class="tick active" data-val="1">D1</span>
+              <span class="tick" data-val="2">D2</span>
+              <span class="tick" data-val="3">D3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Telemetry Summary -->
+      <div class="telemetry-strip">
+        <div class="telemetry-box">
+          <div class="tel-label">OMSÄTTNING</div>
+          <div class="tel-value" id="telGrossTurnover">115,000 SEK</div>
+        </div>
+        <div class="telemetry-box highlight">
+          <div class="tel-label">SKATTEBESPARING</div>
+          <div class="tel-value savings" id="telPotentialSavings">+5,296 SEK</div>
+        </div>
+        <div class="telemetry-box">
+          <div class="tel-label">EFFEKTIVITET</div>
+          <div class="tel-value" id="telEfficiency">95.4%</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Breadcrumb Navigation Trail -->
+    <nav class="breadcrumb-strip" id="breadcrumbNav" aria-label="Navigeringsstig">
+      <!-- Dynamically populated by app.js -->
+    </nav>
+
+    <!-- Main 3-Zone Workspace -->
+    <main class="hud-main-grid">
+      
+      <!-- ZONE 1: Context Lens -->
+      <section class="hud-panel zone-context-lens" id="zoneContextLens">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-dot cyan"></span>
+            <h2>ZON 1: DYNAMISK KONTEXTLINS</h2>
+          </div>
+          <span class="panel-tag" id="contextIdTag">ctx_auto</span>
+        </div>
+
+        <div class="panel-content">
+          <!-- Active Focal Entity -->
+          <div class="entity-card" id="focalEntityCard">
+            <div class="card-caption">AKTUELL FOKUSPUNKT (TARGET)</div>
+            <div class="entity-name" id="focalEntityTitle">Q3 Transaktionsström</div>
+            <div class="entity-meta" id="focalEntityMeta">4 transaktioner • 115 000 SEK brutto</div>
+          </div>
+
+          <!-- Allowed Domains Matrix -->
+          <div class="domains-matrix-group">
+            <div class="card-caption">TILLÅTNA DOMÄNER (BEHÖRIGHETSMATRIS)</div>
+            <div class="domains-grid" id="domainsGrid">
+              <span class="domain-tag active" data-domain="Trust">Trust</span>
+              <span class="domain-tag active" data-domain="Exchange">Exchange</span>
+              <span class="domain-tag active" data-domain="Operational">Operational</span>
+              <span class="domain-tag active" data-domain="Knowledge">Knowledge</span>
+              <span class="domain-tag inactive" data-domain="Tools">Tools</span>
+              <span class="domain-tag inactive" data-domain="Interactional Interface">Interactional</span>
+            </div>
+          </div>
+
+          <!-- Active Observations -->
+          <div class="observations-group">
+            <div class="card-caption">AKTIVA TELEMETRIOBSERVATIONER (<span id="obsCount">4</span>)</div>
+            <div class="obs-list" id="obsList">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Momsdeklaration Draft Mini-Widget -->
+          <div class="moms-preview-card">
+            <div class="card-caption">SKATTEVERKET MOMSDEKLARATION (UTKAST)</div>
+            <div class="moms-row">
+              <span>Fält 05 (25% moms):</span>
+              <strong id="momsFalt05">20 000 SEK</strong>
+            </div>
+            <div class="moms-row highlight">
+              <span>Fält 08 (VMB Beskattningsunderlag):</span>
+              <strong id="momsFalt08">4 000 SEK</strong>
+            </div>
+            <div class="moms-row">
+              <span>Fält 10 (Utgående moms):</span>
+              <strong id="momsFalt10">6 000 SEK</strong>
+            </div>
+            <div class="moms-row">
+              <span>Fält 41 (Omvänd byggmoms):</span>
+              <strong id="momsFalt41">10 000 SEK</strong>
+            </div>
+            <div class="moms-row total">
+              <span>Moms att betala:</span>
+              <strong id="momsFalt49" class="moms-net">3 500 SEK</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ZONE 2: Agent Stepper & Interactive HITL Diff Engine -->
+      <section class="hud-panel zone-agent-stepper" id="zoneAgentStepper">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-dot emerald"></span>
+            <h2>ZON 2: AGENTLOOP & HUMAN-IN-THE-LOOP DIFF</h2>
+          </div>
+          <span class="agent-status-badge" id="agentStatusBadge">Redo</span>
+        </div>
+
+        <div class="panel-content">
+          <!-- 6-Stage Timeline Stepper -->
+          <div class="stepper-timeline" id="stepperTimeline">
+            <div class="step-node active" data-step="1" id="stepNode1">
+              <div class="step-bubble">1</div>
+              <span class="step-label">Observe</span>
+            </div>
+            <div class="step-line" id="stepLine1"></div>
+
+            <div class="step-node" data-step="2" id="stepNode2">
+              <div class="step-bubble">2</div>
+              <span class="step-label">Analyze</span>
+            </div>
+            <div class="step-line" id="stepLine2"></div>
+
+            <div class="step-node" data-step="3" id="stepNode3">
+              <div class="step-bubble">3</div>
+              <span class="step-label">Identify</span>
+            </div>
+            <div class="step-line" id="stepLine3"></div>
+
+            <div class="step-node" data-step="4" id="stepNode4">
+              <div class="step-bubble">4</div>
+              <span class="step-label">Propose</span>
+            </div>
+            <div class="step-line" id="stepLine4"></div>
+
+            <div class="step-node" data-step="5" id="stepNode5">
+              <div class="step-bubble">5</div>
+              <span class="step-label">Act</span>
+            </div>
+            <div class="step-line" id="stepLine5"></div>
+
+            <div class="step-node" data-step="6" id="stepNode6">
+              <div class="step-bubble">6</div>
+              <span class="step-label">Evaluate</span>
+            </div>
+          </div>
+
+          <!-- Stepper Action Buttons -->
+          <div class="stepper-controls">
+            <button id="btnRunFullLoop" class="btn primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Kör Full Agentloop
+            </button>
+            <button id="btnStepNext" class="btn secondary">
+              Stega Framåt &gt;
+            </button>
+            <button id="btnResetStepper" class="btn ghost">
+              Återställ
+            </button>
+          </div>
+
+          <!-- Active Step Telemetry Details -->
+          <div class="step-details-box" id="stepDetailsBox">
+            <div class="step-details-header" id="stepDetailsTitle">Steg 1: Observation av indata</div>
+            <div class="step-details-body" id="stepDetailsBody">
+              Klicka på "Stega Framåt" eller "Kör Full Agentloop" för att starta TaxOptimizationAgent.
+            </div>
+          </div>
+
+          <!-- Interactive Financial Diff (Before vs After) -->
+          <div class="financial-diff-container" id="financialDiffContainer">
+            <div class="diff-header">
+              <span class="diff-title">LEGAL SKATTEJÄMFÖRELSE: NUVARANDE VS. OPTIMERAD</span>
+              <span class="diff-pill" id="activeDiffTxId">TX-1001 (Husqvarna 430X)</span>
+            </div>
+
+            <div class="diff-grid">
+              <!-- Left: Suboptimal As-Is -->
+              <div class="diff-card as-is">
+                <div class="diff-card-title">NUVARANDE BOKFÖRING (AS-IS)</div>
+                <div class="diff-metric">
+                  <span>Tillämpad regel:</span>
+                  <strong>Standardmoms 25%</strong>
+                </div>
+                <div class="diff-metric">
+                  <span>BAS-Konto:</span>
+                  <code>3001 Försäljning 25% moms</code>
+                </div>
+                <div class="diff-metric alert-negative">
+                  <span>Utgående moms betald:</span>
+                  <strong class="text-rose">3 200,00 SEK</strong>
+                </div>
+                <div class="diff-metric">
+                  <span>Nettomarginal:</span>
+                  <strong>2 800,00 SEK (17,5%)</strong>
+                </div>
+              </div>
+
+              <!-- Right: Optimized To-Be -->
+              <div class="diff-card to-be">
+                <div class="diff-card-title">OPTIMERING (OMNIPOD REKOMMENDATION)</div>
+                <div class="diff-metric">
+                  <span>Rekommenderad regel:</span>
+                  <strong class="text-emerald">VMB Marginalbeskattning (ML 9a kap)</strong>
+                </div>
+                <div class="diff-metric">
+                  <span>BAS-Konto:</span>
+                  <code>3051 Försäljning varor VMB</code>
+                </div>
+                <div class="diff-metric alert-positive">
+                  <span>Utgående moms att betala:</span>
+                  <strong class="text-emerald">1 200,00 SEK (-2 000 SEK)</strong>
+                </div>
+                <div class="diff-metric">
+                  <span>Nettomarginal:</span>
+                  <strong class="text-emerald">4 800,00 SEK (+71,4% Vinstökning)</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="diff-legal-basis" id="diffLegalBasis">
+              <strong>Laglig Grund:</strong> Mervärdesskattelagen (ML 9a kap). Inköpt från privatperson utan avdragsgill ingående moms. Endast vinstmarginalen beskattas med 20%.
+            </div>
+
+            <!-- HITL Approval Trigger -->
+            <div class="hitl-action-bar">
+              <button id="btnApproveVoucher" class="btn action-approve">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Godkänn Skatteoptimering & Bokför Verifikat
+              </button>
+              <span class="hitl-status-text" id="hitlStatusText">Avvaktar mänskligt godkännande (HITL)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ZONE 3: Interactive Spatial Canvas & Horizon Scouting -->
+      <section class="hud-panel zone-spatial-canvas" id="zoneSpatialCanvas">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="panel-dot purple"></span>
+            <h2>ZON 3: SPATIAL KUNSKAPSGRAF</h2>
+          </div>
+          <div class="canvas-controls">
+            <button id="btnResetCanvas" class="btn-icon" title="Återställ grafvy">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                <path d="M21 3v5h-5"></path>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                <path d="M3 21v-5h5"></path>
+              </svg>
+            </button>
+            <span class="node-count-badge" id="canvasNodeCount">12 Noder</span>
+          </div>
+        </div>
+
+        <div class="panel-content canvas-panel-content">
+          <!-- Canvas Element -->
+          <div class="canvas-wrapper">
+            <canvas id="spatialCanvas"></canvas>
+            <div class="canvas-legend">
+              <span class="legend-item"><span class="legend-dot dot-op"></span> Operational</span>
+              <span class="legend-item"><span class="legend-dot dot-ex"></span> Exchange</span>
+              <span class="legend-item"><span class="legend-dot dot-tr"></span> Trust</span>
+              <span class="legend-item"><span class="legend-dot dot-kn"></span> Knowledge</span>
+              <span class="legend-item"><span class="legend-dot dot-to"></span> Tools</span>
+            </div>
+          </div>
+
+          <!-- Orbiting Satellites (Next Recommended Exploration Nodes) -->
+          <div class="orbiting-satellites-container">
+            <div class="satellites-header">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>NÄSTA REKOMMENDERADE UTFORSKNINGSPUNKTER (NEXT NODE)</span>
+            </div>
+            <div class="satellites-pills" id="satellitesPills">
+              <!-- Dynamically populated satellite badges -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ZONE 4: Balanced Journal Voucher Ledger (Bottom Drawer) -->
+    <footer class="hud-footer zone-voucher-drawer" id="zoneVoucherDrawer">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <span class="panel-dot amber"></span>
+          <h3>ZON 4: BALANSERADE BAS-VERIFIKAT (DEBET == KREDIT)</h3>
+        </div>
+        <div class="drawer-meta">
+          <span id="voucherCount">1 bokfört verifikat</span>
+        </div>
+      </div>
+      <div class="voucher-table-wrapper">
+        <table class="voucher-table" id="voucherTable">
+          <thead>
+            <tr>
+              <th>Verifikat-ID</th>
+              <th>Konto & Beskrivning</th>
+              <th>Debet (SEK)</th>
+              <th>Kredit (SEK)</th>
+              <th>Balanskontroll</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="voucherTableBody">
+            <!-- Dynamically populated with balanced rows -->
+          </tbody>
+        </table>
+      </div>
+    </footer>
+
+  </div>
+  </div><!-- /.hud-root -->
+
+  <script src="toast.js"></script>
+  <script src="canvas.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
