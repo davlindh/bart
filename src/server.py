@@ -17,11 +17,44 @@ from src.core.types import Domain, PerspectiveWindow, ScopeLevel, TaxRuleType
 from src.core.contracts import ContextPacket, Observation
 from src.context_engine.resolver import ContextResolver
 from src.perspective_windows.financial_management import FinancialManagementWindow
-from src.agents.tax_optimization_agent import TaxOptimizationAgent
+from src.agents import (
+    TWELVE_CORE_AGENTS,
+    TaxOptimizationAgent,
+    ObserverAgent,
+    DiagnosticianAgent,
+    TeamArchitectAgent,
+    RoleTransitionAgent,
+    CollaborationAgent,
+    WellbeingAgent,
+    AIEthicsAgent,
+    ExperimentAgent,
+    MeasurementAgent,
+    LearningAgent,
+    OrchestratorAgent,
+    MetaLearningAgent,
+)
 from src.tax_engine.models import TaxTransaction, CustomerTaxProfile
 from src.tax_engine.bas_kontoplan import BASKontoplan
 from src.tax_engine.evaluator import TaxRuleEvaluator
 from src.tax_engine.momsdeklaration import MomsdeklarationGenerator
+from src.tax_engine.verification_engine import FinancialVerificationEngine
+from src.tax_engine.combinatorial_engine import CombinatorialTaxEngine
+
+AGENT_REGISTRY = {
+    "TaxOptimizationAgent": TaxOptimizationAgent,
+    "ObserverAgent": ObserverAgent,
+    "DiagnosticianAgent": DiagnosticianAgent,
+    "TeamArchitectAgent": TeamArchitectAgent,
+    "RoleTransitionAgent": RoleTransitionAgent,
+    "CollaborationAgent": CollaborationAgent,
+    "WellbeingAgent": WellbeingAgent,
+    "AIEthicsAgent": AIEthicsAgent,
+    "ExperimentAgent": ExperimentAgent,
+    "MeasurementAgent": MeasurementAgent,
+    "LearningAgent": LearningAgent,
+    "OrchestratorAgent": OrchestratorAgent,
+    "MetaLearningAgent": MetaLearningAgent,
+}
 
 STATIC_DIR = Path(__file__).resolve().parent / "web"
 
@@ -220,6 +253,65 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json(graph_data)
             return
 
+        if path == "/api/tax/rules":
+            from src.tax_engine.rule_library import ALL_TAX_RULES
+            rules_meta = [
+                {
+                    "rule_type": r.rule_type.value if hasattr(r.rule_type, "value") else str(r.rule_type),
+                    "title": r.title,
+                    "category": r.category,
+                    "legal_basis": r.legal_basis,
+                    "recommended_account": r.recommended_account,
+                }
+                for r in ALL_TAX_RULES
+            ]
+            self._send_json(rules_meta)
+            return
+
+        if path == "/api/windows":
+            windows = [
+                {"id": "W1", "name": "Kontextualisering", "code": PerspectiveWindow.W1_CONTEXTUALIZATION.value, "icon": "🌐"},
+                {"id": "W2", "name": "Matchning", "code": PerspectiveWindow.W2_MATCHING.value, "icon": "🔗"},
+                {"id": "W3", "name": "Utvärdering", "code": PerspectiveWindow.W3_EVALUATION.value, "icon": "📊"},
+                {"id": "W4", "name": "Resursallokering", "code": PerspectiveWindow.W4_RESOURCE_ALLOCATION.value, "icon": "📦"},
+                {"id": "W5", "name": "Ekonomihantering", "code": PerspectiveWindow.W5_FINANCIAL_MANAGEMENT.value, "icon": "💰"},
+                {"id": "W6", "name": "Personalhantering", "code": PerspectiveWindow.W6_PERSONNEL_MANAGEMENT.value, "icon": "👥"},
+                {"id": "W7", "name": "Kommunikation", "code": PerspectiveWindow.W7_COMMUNICATION.value, "icon": "💬"},
+                {"id": "W8", "name": "Innovation & Teknik", "code": PerspectiveWindow.W8_INNOVATION_TECH.value, "icon": "💡"},
+                {"id": "W9", "name": "Adaptiva Insikter", "code": PerspectiveWindow.W9_ADAPTIVE_INSIGHTS.value, "icon": "🧠"},
+            ]
+            self._send_json(windows)
+            return
+
+        if path.startswith("/api/window/"):
+            win_id = path.split("/")[-1].upper()
+            win_data = self._get_window_data(win_id)
+            self._send_json(win_data)
+            return
+
+        if path == "/api/agents":
+            from src.agents import TWELVE_CORE_AGENTS
+            agents_meta = [
+                {
+                    "name": a.__name__,
+                    "instance_name": a().name,
+                    "description": a.__doc__.splitlines()[0] if a.__doc__ else "Agent",
+                }
+                for a in TWELVE_CORE_AGENTS
+            ]
+            self._send_json(agents_meta)
+            return
+
+        if path == "/api/fortnox/summary":
+            fortnox_data = self._compute_fortnox_summary()
+            self._send_json(fortnox_data)
+            return
+
+        if path == "/api/erd/graph":
+            erd_data = self._get_erd_graph_data()
+            self._send_json(erd_data)
+            return
+
         # Default static file handling
         if path == "/" or not path:
             self.path = "/index.html"
@@ -273,42 +365,62 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         if path == "/api/agent/step":
+            agent_name = payload.get("agent_name", "TaxOptimizationAgent")
             step = payload.get("step", "observe")
+            agent_cls = AGENT_REGISTRY.get(agent_name, TaxOptimizationAgent)
+            agent_instance = agent_cls()
+
             context_data = payload.get("context", {})
             try:
                 context_packet = ContextPacket(**context_data)
             except Exception:
-                # Build default context if raw
                 context_packet = ContextResolver.resolve_context(
                     role=payload.get("role", "CFO"),
-                    purpose=payload.get("purpose", "Interaktiv skatteoptimering"),
+                    purpose=payload.get("purpose", f"{agent_name} Steg {step}"),
                     task=payload.get("task", "Analysera transaktioner"),
                     scope=ScopeLevel(payload.get("scope", "D1")),
-                    target_entity=context_data.get("primary_entity", context_data),
+                    target_entity=context_data.get("primary_entity", SCENARIOS["mixed_q3"]),
                 )
 
-            step_res = GLOBAL_AGENT.run_step(step, context_packet)
-            # Normalize output key so app.js can read step_res.output
+            step_res = agent_instance.run_step(step, context_packet)
             if isinstance(step_res, dict) and "output" not in step_res:
                 step_res["output"] = step_res.get("result", step_res.get("summary", f"Steg {step} slutfört"))
-            self._send_json(step_res)
+            self._send_json({
+                "agent_name": agent_instance.name,
+                "status": agent_instance.status.value,
+                "step": step,
+                "step_data": step_res,
+                "output": step_res.get("output", f"Steg {step} slutfört"),
+            })
             return
 
         if path == "/api/agent/run":
+            agent_name = payload.get("agent_name", "TaxOptimizationAgent")
+            agent_cls = AGENT_REGISTRY.get(agent_name, TaxOptimizationAgent)
+            agent_instance = agent_cls()
+
             context_data = payload.get("context", {})
             try:
                 context_packet = ContextPacket(**context_data)
             except Exception:
                 context_packet = ContextResolver.resolve_context(
                     role=payload.get("role", "CFO"),
-                    purpose=payload.get("purpose", "Fullständig revision"),
-                    task=payload.get("task", "Kör 6-stegs agentloop"),
+                    purpose=payload.get("purpose", f"{agent_name} Full körning"),
+                    task=payload.get("task", "Kör fullständig agentloop"),
                     scope=ScopeLevel(payload.get("scope", "D1")),
-                    target_entity=context_data.get("primary_entity", context_data),
+                    target_entity=context_data.get("primary_entity", SCENARIOS["mixed_q3"]),
                 )
 
-            res = GLOBAL_AGENT.run(context_packet)
-            self._send_json(res.model_dump())
+            res = agent_instance.run(context_packet)
+            self._send_json({
+                "agent_name": agent_instance.name,
+                "status": res.status.value,
+                "observations_count": len(res.observations),
+                "diagnoses": [d.model_dump() for d in res.diagnoses],
+                "recommendations": res.recommendations,
+                "actions": res.actions_taken,
+                "metrics_summary": res.metrics_summary,
+            })
             return
 
         if path == "/api/voucher/approve":
@@ -354,7 +466,225 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json({"success": True, "record": record})
             return
 
+        if path == "/api/financial/verify":
+            raw_txs = payload.get("transactions", [])
+            txs = [TaxTransaction(**t) if isinstance(t, dict) else t for t in raw_txs]
+            moms_data = payload.get("momsdeklaration")
+            moms_report = MomsdeklarationReport(**moms_data) if isinstance(moms_data, dict) else None
+            
+            verification_report = FinancialVerificationEngine.verify_transaction_batch(
+                transactions=txs,
+                momsdeklaration=moms_report,
+                booked_vouchers=APPROVED_VOUCHERS,
+            )
+            self._send_json(verification_report.model_dump())
+            return
+
+        if path == "/api/tax/combinatorial":
+            raw_txs = payload.get("transactions", [])
+            txs = [TaxTransaction(**t) if isinstance(t, dict) else t for t in raw_txs]
+            profit = payload.get("annual_taxable_profit")
+            salaries = payload.get("total_salaries_paid")
+            owner_wage = payload.get("owner_salary")
+            rd_salaries = payload.get("monthly_rd_salaries")
+
+            combo_result = CombinatorialTaxEngine.analyze_combinatorial_opportunities(
+                transactions=txs,
+                annual_taxable_profit=float(profit) if profit else None,
+                total_salaries_paid=float(salaries) if salaries else None,
+                owner_salary=float(owner_wage) if owner_wage else None,
+                monthly_rd_salaries=float(rd_salaries) if rd_salaries else None,
+            )
+            self._send_json(combo_result.model_dump())
+            return
+
+        if path == "/api/agents/loop":
+            context_data = payload.get("context", {})
+            try:
+                context_packet = ContextPacket(**context_data)
+            except Exception:
+                context_packet = ContextResolver.resolve_context(
+                    role=payload.get("role", "CFO"),
+                    purpose="12-Agent Helhetsoptimering",
+                    task="Kör fullständig sluten agentloop",
+                    scope=ScopeLevel(payload.get("scope", "D2")),
+                    target_entity=context_data.get("primary_entity", {}),
+                )
+            
+            # Execute all 12 agents in sequence
+            agent_loop_results = []
+            current_context = context_packet
+            for AgentCls in TWELVE_CORE_AGENTS:
+                agent = AgentCls()
+                res = agent.run(current_context)
+                agent_loop_results.append({
+                    "agent_name": agent.name,
+                    "status": res.status.value,
+                    "diagnoses_count": len(res.diagnoses),
+                    "recommendations": res.recommendations,
+                    "actions": res.actions_taken,
+                    "metrics": res.metrics_summary,
+                })
+
+            self._send_json({
+                "status": "COMPLETED",
+                "loop_name": "Team Dynamics 12-Agent Self-Improving Loop",
+                "executed_agents_count": len(agent_loop_results),
+                "results": agent_loop_results,
+            })
+            return
+
         self._send_json({"error": "Endpoint not found"}, status=404)
+
+    def _get_window_data(self, window_id: str) -> Dict[str, Any]:
+        """Returns live data for any of the 9 Omnipod Perspective Windows."""
+        from src.perspective_windows import (
+            ContextualizationWindow,
+            MatchingWindow,
+            EvaluationWindow,
+            ResourceAllocationWindow,
+            FinancialManagementWindow,
+            PersonnelManagementWindow,
+            CommunicationWindow,
+            InnovationWindow,
+            AdaptiveInsightsWindow,
+        )
+        scenario = SCENARIOS.get("mixed_q3", {})
+        txs = [TaxTransaction(**t) for t in scenario.get("transactions", [])]
+
+        if window_id == "W1":
+            return ContextualizationWindow.evaluate_context(scenario)
+        elif window_id == "W2":
+            return MatchingWindow.match_quote_configuration("Robotklippare inbyte & installation", 24000.0)
+        elif window_id == "W3":
+            return EvaluationWindow.evaluate_performance({"audit_status": "OK"})
+        elif window_id == "W4":
+            return ResourceAllocationWindow.evaluate_allocations({"budget": 450000.0})
+        elif window_id == "W5":
+            return FinancialManagementWindow.audit_financial_stream(txs)
+        elif window_id == "W6":
+            return PersonnelManagementWindow.evaluate_team_overview({})
+        elif window_id == "W7":
+            return CommunicationWindow.get_display_feed({})
+        elif window_id == "W8":
+            return InnovationWindow.get_innovation_pipeline({})
+        elif window_id == "W9":
+            return AdaptiveInsightsWindow.synthesize_insights({})
+        return {"error": f"Fönster {window_id} hittades inte", "window_id": window_id}
+
+    def _compute_fortnox_summary(self) -> Dict[str, Any]:
+        """Runs the FortnoxComputationPipeline on realistic Swedish SMB ERP dataset."""
+        from src.fortnox import (
+            FortnoxInvoice, FortnoxInvoiceRow,
+            FortnoxEmployee, FortnoxTimeReport,
+            FortnoxProject, FortnoxComputationPipeline
+        )
+
+        invoices = [
+            FortnoxInvoice(
+                document_number="1001", customer_number="CUST-001",
+                customer_name="Erik Johansson", invoice_date="2026-08-01", due_date="2026-08-15",
+                total=16000.0, net=12800.0,
+                rows=[FortnoxInvoiceRow(article_number="INBYTE-01", description="Begagnad Husqvarna 430X", delivered_quantity=1, price=16000.0, vat=25.0)]
+            ),
+            FortnoxInvoice(
+                document_number="1002", customer_number="CUST-002",
+                customer_name="Karin Lindström", invoice_date="2026-08-05", due_date="2026-08-19",
+                total=24000.0, net=19200.0,
+                rows=[
+                    FortnoxInvoiceRow(article_number="MOWER-450X", description="Automower 450X Maskin", delivered_quantity=1, price=16000.0, vat=25.0),
+                    FortnoxInvoiceRow(article_number="INST-RUT", description="Fältinstallation & Kabeldragning", delivered_quantity=1, price=8000.0, vat=25.0, is_work_cost=True),
+                ]
+            ),
+            FortnoxInvoice(
+                document_number="1003", customer_number="CUST-003",
+                customer_name="Syd Bygg & Anläggning AB", invoice_date="2026-08-10", due_date="2026-08-24",
+                total=50000.0, net=40000.0,
+                rows=[FortnoxInvoiceRow(article_number="SCHAKT", description="Markschaktning för kabeldragning", delivered_quantity=1, price=40000.0, vat=25.0, is_work_cost=True)]
+            ),
+        ]
+
+        employees = [
+            FortnoxEmployee(employee_id="1", first_name="Anders", last_name="Lindqvist", job_title="Ekonomichef (CFO)", department="Ledning & Ekonomi", monthly_salary=55000.0, is_owner=True),
+            FortnoxEmployee(employee_id="2", first_name="Karin", last_name="Svensson", job_title="Verkstadschef", department="Verkstad & Service", monthly_salary=42000.0),
+            FortnoxEmployee(employee_id="3", first_name="Johan", last_name="Berg", job_title="Fältmontör & Servicetekniker", department="Drift & Installation", monthly_salary=36000.0),
+            FortnoxEmployee(employee_id="4", first_name="Erik", last_name="Nilsson", job_title="Systemutvecklare & IT", department="Utveckling & FoU", monthly_salary=48000.0, is_rd_personnel=True),
+        ]
+
+        time_reports = [
+            FortnoxTimeReport(report_id="TR-1", employee_id="2", date="2026-08-12", project_code="PRJ-101", hours=8.0, activity="Verkstadsarbete"),
+            FortnoxTimeReport(report_id="TR-2", employee_id="2", date="2026-08-13", project_code="PRJ-101", hours=9.5, activity="Inbytesbesiktning", is_overtime=True),
+            FortnoxTimeReport(report_id="TR-3", employee_id="3", date="2026-08-12", project_code="PRJ-102", hours=8.0, activity="Kabeldragning"),
+            FortnoxTimeReport(report_id="TR-4", employee_id="3", date="2026-08-13", project_code="PRJ-102", hours=11.0, activity="Akut fältreparation", is_overtime=True),
+            FortnoxTimeReport(report_id="TR-5", employee_id="4", date="2026-08-12", project_code="PRJ-103", hours=8.0, activity="Systemintegration"),
+        ]
+
+        projects = [
+            FortnoxProject(project_code="PRJ-101", description="Inbytesflotta VMB Q3", start_date="2026-07-01", project_leader_id="2"),
+            FortnoxProject(project_code="PRJ-102", description="RUT Villainstallationer", start_date="2026-07-01", project_leader_id="3"),
+            FortnoxProject(project_code="PRJ-103", description="BART Omnipod FoU", start_date="2026-06-01", project_leader_id="4"),
+        ]
+
+        org_name = "Trädgård & Maskinservice AB"
+        result = FortnoxComputationPipeline.compute_all(
+            org_name=org_name,
+            invoices=invoices,
+            employees=employees,
+            time_reports=time_reports,
+            projects=projects,
+        )
+        # Convert graph to serializable structure
+        result["erd_graph"] = {
+            "node_count": len(result["erd_graph"].nodes),
+            "organization": org_name,
+        }
+        return result
+
+    def _get_erd_graph_data(self) -> Dict[str, Any]:
+        """Returns nodes and links from the Universal ERD Graph."""
+        fn_summary = self._compute_fortnox_summary()
+        # Create a sample ERD graph for canvas visualizer
+        nodes = [
+            {"id": "org_1", "name": "Trädgård & Maskinservice AB", "type": "Organization", "domain": "Trust", "size": 32},
+            {"id": "team_1", "name": "Ledning & Ekonomi", "type": "Team", "domain": "Trust", "size": 26},
+            {"id": "team_2", "name": "Verkstad & Service", "type": "Team", "domain": "Operational", "size": 26},
+            {"id": "team_3", "name": "Drift & Installation", "type": "Team", "domain": "Operational", "size": 26},
+            {"id": "emp_1", "name": "Anders Lindqvist (CFO)", "type": "Person", "domain": "Interactional Interface", "size": 20},
+            {"id": "emp_2", "name": "Karin Svensson (Verkstadschef)", "type": "Person", "domain": "Interactional Interface", "size": 20},
+            {"id": "emp_3", "name": "Johan Berg (Fältmontör)", "type": "Person", "domain": "Interactional Interface", "size": 20},
+            {"id": "role_1", "name": "Ekonomichef", "type": "Role", "domain": "Operational", "size": 22},
+            {"id": "role_2", "name": "Verkstadschef", "type": "Role", "domain": "Operational", "size": 22},
+            {"id": "obs_1", "name": "Signal: Övertid 11h Johan Berg", "type": "Observation", "domain": "Operational", "size": 18},
+            {"id": "diag_1", "name": "Diagnos: Flaskhals i fältinstallation", "type": "Diagnosis", "domain": "Knowledge", "size": 22},
+            {"id": "interv_1", "name": "Intervention: Digital inbytesmall", "type": "Intervention", "domain": "Tools", "size": 24},
+            {"id": "exp_1", "name": "Experiment: RUT 50% Offertpilot", "type": "Experiment", "domain": "Innovation & Tech", "size": 22},
+            {"id": "meas_1", "name": "Mätning: Beslutstid -22%", "type": "Measurement", "domain": "Evaluation", "size": 20},
+            {"id": "learn_1", "name": "Lärdom: VMB+RUT ger +40% konvertering", "type": "Learning", "domain": "Knowledge", "size": 22},
+            {"id": "know_1", "name": "Kunskap: Paketmall Grön Robotkomfort", "type": "Knowledge", "domain": "Knowledge", "size": 24},
+        ]
+        links = [
+            {"source": "org_1", "target": "team_1", "relation": "HAS"},
+            {"source": "org_1", "target": "team_2", "relation": "HAS"},
+            {"source": "org_1", "target": "team_3", "relation": "HAS"},
+            {"source": "team_1", "target": "emp_1", "relation": "INCLUDES"},
+            {"source": "team_2", "target": "emp_2", "relation": "INCLUDES"},
+            {"source": "team_3", "target": "emp_3", "relation": "INCLUDES"},
+            {"source": "emp_1", "target": "role_1", "relation": "ASSIGNED_TO"},
+            {"source": "emp_2", "target": "role_2", "relation": "ASSIGNED_TO"},
+            {"source": "team_3", "target": "obs_1", "relation": "GENERATES"},
+            {"source": "obs_1", "target": "diag_1", "relation": "GENERATES"},
+            {"source": "diag_1", "target": "interv_1", "relation": "LEADS_TO"},
+            {"source": "interv_1", "target": "exp_1", "relation": "DESIGNED_AS"},
+            {"source": "exp_1", "target": "meas_1", "relation": "MEASURED_BY"},
+            {"source": "meas_1", "target": "learn_1", "relation": "GENERATES"},
+            {"source": "learn_1", "target": "know_1", "relation": "CREATES"},
+        ]
+        return {
+            "nodes": nodes,
+            "links": links,
+            "count": len(nodes),
+            "framework": "Universal ERD (15 Entities)",
+        }
 
     def _generate_graph_data(self, scenario_id: str, scope: str, role: str, focal_id: Optional[str] = None) -> Dict[str, Any]:
         """Generates dynamic nodes and links for the Spatial Canvas based on scope level and optional focal entity."""

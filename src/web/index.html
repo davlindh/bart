@@ -80,6 +80,18 @@
             </div>
           </div>
         </div>
+        <!-- Multi-Agent & Fortnox Actions -->
+        <div class="control-item header-actions-group">
+          <button id="btnRun12AgentLoop" class="btn-hud-action" title="Kör samtliga 12 agenter i sluten självförbättrande loop">
+            ⚡ 12-Agent Loop
+          </button>
+          <button id="btnFortnoxSync" class="btn-hud-action secondary" title="Hämta och beräkna levande Fortnox ERP data">
+            📊 Fortnox Live
+          </button>
+          <button id="btnToggleERD" class="btn-hud-action purple" title="Visa Universal ERD Graf (15 Entiteter)">
+            🌐 ERD Graf
+          </button>
+        </div>
       </div>
 
       <!-- Quick Telemetry Summary -->
@@ -118,7 +130,11 @@
         </div>
 
         <div class="panel-content">
-          <!-- Active Focal Entity -->
+          <!-- Dynamic Perspective Content Container (W1-W9) -->
+          <div id="perspectiveDynamicContainer" class="perspective-dynamic-container" style="display: none;"></div>
+
+          <div id="perspectiveDefaultW5Container">
+            <!-- Active Focal Entity -->
           <div class="entity-card" id="focalEntityCard">
             <div class="card-caption">AKTUELL FOKUSPUNKT (TARGET)</div>
             <div class="entity-name" id="focalEntityTitle">Q3 Transaktionsström</div>
@@ -170,6 +186,7 @@
               <strong id="momsFalt49" class="moms-net">3 500 SEK</strong>
             </div>
           </div>
+          </div> <!-- Close perspectiveDefaultW5Container -->
         </div>
       </section>
 
@@ -180,7 +197,24 @@
             <span class="panel-dot emerald"></span>
             <h2>ZON 2: AGENTLOOP & HUMAN-IN-THE-LOOP DIFF</h2>
           </div>
-          <span class="agent-status-badge" id="agentStatusBadge">Redo</span>
+          <div class="stepper-header-actions" style="display: flex; gap: 8px; align-items: center;">
+            <select id="agentSelect" class="hud-select" style="font-size: 0.75rem; padding: 3px 8px; border-radius: 4px;">
+              <option value="TaxOptimizationAgent">TaxOptimizationAgent (Skatte & Moms)</option>
+              <option value="ObserverAgent">1. ObserverAgent (Nulägesbild & Signaler)</option>
+              <option value="DiagnosticianAgent">2. DiagnosticianAgent (Hypoteser & Rotorsaker)</option>
+              <option value="TeamArchitectAgent">3. TeamArchitectAgent (Struktur & Mandat)</option>
+              <option value="RoleTransitionAgent">4. RoleTransitionAgent (Övergång & Plan)</option>
+              <option value="CollaborationAgent">5. CollaborationAgent (Samarbete & Handoffs)</option>
+              <option value="WellbeingAgent">6. WellbeingAgent (Hälsa & Belastningsbalans)</option>
+              <option value="AIEthicsAgent">7. AIEthicsAgent (HITL & Guardrails)</option>
+              <option value="ExperimentAgent">8. ExperimentAgent (Experimentplan & Pilot)</option>
+              <option value="MeasurementAgent">9. MeasurementAgent (KPI:er & Effektstorlek)</option>
+              <option value="LearningAgent">10. LearningAgent (Lärdomar & Regler)</option>
+              <option value="OrchestratorAgent">11. OrchestratorAgent (Prioritering & Sekvens)</option>
+              <option value="MetaLearningAgent">12. MetaLearningAgent (Systemförbättring & Heuristik)</option>
+            </select>
+            <span class="agent-status-badge" id="agentStatusBadge">Redo</span>
+          </div>
         </div>
 
         <div class="panel-content">

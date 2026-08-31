@@ -5,7 +5,7 @@ from src.server import BARTRequestHandler, SCENARIOS
 from src.context_engine.resolver import ContextResolver
 from src.perspective_windows.financial_management import FinancialManagementWindow
 from src.agents.tax_optimization_agent import TaxOptimizationAgent
-from src.core.types import ScopeLevel
+from src.core.types import ScopeLevel, TaxRuleType
 
 
 def test_scenarios_data_integrity():
@@ -45,3 +45,37 @@ def test_graph_generator_scopes():
     assert g_d3["scope"] == "D3"
     assert any(n["id"] == "meta_learning_agent" for n in g_d3["nodes"])
     assert any(n["id"] == "macro_skatteverket" for n in g_d3["nodes"])
+
+
+def test_api_tax_rules_registry():
+    """Verify rule registry endpoint returns metadata for all statutory rules."""
+    from src.tax_engine.rule_library import ALL_TAX_RULES
+    assert len(ALL_TAX_RULES) >= 8
+    rule_types = [r.rule_type for r in ALL_TAX_RULES]
+    assert TaxRuleType.VMB_MARGIN_TAX in rule_types
+    assert TaxRuleType.RUT_DEDUCTION in rule_types
+    assert TaxRuleType.ROT_DEDUCTION in rule_types
+    assert TaxRuleType.GRON_TEKNIK in rule_types
+    assert TaxRuleType.PERIODISERINGSFOND in rule_types
+    assert TaxRuleType.K10_DIVIDEND_OPTIMAL in rule_types
+    assert TaxRuleType.FOU_DEDUCTION in rule_types
+
+
+def test_server_windows_and_fortnox_endpoints():
+    """Verify internal server helper methods for perspective windows and Fortnox calculations."""
+    handler = BARTRequestHandler.__new__(BARTRequestHandler)
+    
+    # Test windows W1 through W9
+    for wid in ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8", "W9"]:
+        w_data = handler._get_window_data(wid)
+        assert "window" in w_data
+
+    # Test Fortnox live computation
+    fn = handler._compute_fortnox_summary()
+    assert "team_dynamics_metrics" in fn
+    assert fn["team_dynamics_metrics"]["team_health_index"] > 50
+
+    # Test Universal ERD graph
+    erd = handler._get_erd_graph_data()
+    assert erd["count"] >= 15
+    assert len(erd["links"]) >= 10

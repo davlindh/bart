@@ -141,6 +141,10 @@ class SpatialCanvas {
 
   // ─── Data ─────────────────────────────────────────────────────────────────
 
+  loadData(graphData, focalId = null) {
+    return this.setData(graphData, focalId);
+  }
+
   setData(graphData, focalId = null) {
     const existingNodes = new Map(this.nodes.map(n => [n.id, n]));
     const centerX = this.width / 2;
@@ -481,9 +485,8 @@ class SpatialCanvas {
       // ── Label ──
       const fontSize = (isSelected ? 11 : 10) / this.viewport.scale;
       ctx.font = `${isSelected ? '600 ' : ''}${fontSize}px "Inter", sans-serif`;
-      ctx.fillStyle = isSelected ? '#ffffff' : 'rgba(241,245,249,0.85)';
-      ctx.textAlign = 'center';
-      const label = n.name.length > 18 ? n.name.substring(0, 16) + '..' : n.name;
+      const nameStr = n.name || n.label || n.id || '';
+      const label = nameStr.length > 18 ? nameStr.substring(0, 16) + '..' : nameStr;
       ctx.fillText(label, n.x, n.y + n.radius + 12 / this.viewport.scale);
 
       // ── Opportunity amount badge ──

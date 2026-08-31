@@ -1151,3 +1151,135 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
 }
+
+/* ==========================================================================
+   MULTI-AGENT, FORTNOX & PERSPECTIVE WINDOW STYLES
+   ========================================================================== */
+.header-actions-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn-hud-action {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  background: rgba(6, 182, 212, 0.12);
+  color: var(--accent-cyan);
+  cursor: pointer;
+  transition: all var(--trans-fast);
+  white-space: nowrap;
+}
+
+.btn-hud-action:hover {
+  background: rgba(6, 182, 212, 0.25);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-hud-action.secondary {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--accent-emerald);
+}
+
+.btn-hud-action.secondary:hover {
+  background: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.btn-hud-action.purple {
+  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(168, 85, 247, 0.12);
+  color: #c084fc;
+}
+
+.btn-hud-action.purple:hover {
+  background: rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+/* Perspective Dynamic Container */
+.perspective-dynamic-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.perspective-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 12px;
+  backdrop-filter: var(--glass-blur);
+}
+
+.perspective-card-title {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metric-grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.metric-card-mini {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.metric-card-mini .label {
+  font-size: 0.64rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.metric-card-mini .val {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 2px;
+}
+
+.metric-card-mini .val.positive {
+  color: var(--accent-emerald);
+}
+
+.metric-card-mini .val.warning {
+  color: var(--accent-amber);
+}
+
+.perspective-list {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.perspective-list li {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px 6px;
+  border-radius: 4px;
+  border-left: 2px solid var(--accent-cyan);
+}

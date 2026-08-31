@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     approvedVouchersCount: 0,
     navigationStack: [],   // Breadcrumb trail
     currentWindow: 'W5',   // Active Omnipod window
+    currentAgent: 'TaxOptimizationAgent',
     isAgentRunning: false
   };
 
@@ -52,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const momsFalt41           = document.getElementById('momsFalt41');
   const momsFalt49           = document.getElementById('momsFalt49');
 
+  const agentSelect          = document.getElementById('agentSelect');
   const agentStatusBadge     = document.getElementById('agentStatusBadge');
   const btnRunFullLoop       = document.getElementById('btnRunFullLoop');
   const btnStepNext          = document.getElementById('btnStepNext');
@@ -72,6 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const breadcrumbNav        = document.getElementById('breadcrumbNav');
   const windowSidebar        = document.getElementById('windowSidebar');
+  const perspectiveDynamicContainer = document.getElementById('perspectiveDynamicContainer');
+  const perspectiveDefaultW5Container = document.getElementById('perspectiveDefaultW5Container');
+  const btnRun12AgentLoop    = document.getElementById('btnRun12AgentLoop');
+  const btnFortnoxSync       = document.getElementById('btnFortnoxSync');
+  const btnToggleERD         = document.getElementById('btnToggleERD');
 
   // ─── Spatial Canvas Init ─────────────────────────────────────────────────
 
@@ -547,6 +554,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (agentStatusBadge) agentStatusBadge.textContent = `Steg ${stepIndex}/6`;
   }
 
+  if (agentSelect) {
+    agentSelect.addEventListener('change', (e) => {
+      state.currentAgent = e.target.value;
+      const opt = agentSelect.options[agentSelect.selectedIndex];
+      Toast.info(`Aktiv agent: ${opt ? opt.text : state.currentAgent}`, 2500);
+      setStep(1);
+    });
+  }
+
   if (btnStepNext) btnStepNext.addEventListener('click', async () => {
     const nextStep = Math.min(state.currentStepIndex + 1, 6);
     setStep(nextStep);
@@ -556,12 +572,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/agent/step', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ step: stepName, role: state.currentRole, scope: state.currentScope, context: state.contextPacket })
+        body: JSON.stringify({
+          agent_name: state.currentAgent,
+          step: stepName,
+          role: state.currentRole,
+          scope: state.currentScope,
+          context: state.contextPacket
+        })
       });
       const data = await res.json();
       const stepLabel = info(nextStep);
-      const outputMsg = (data && (data.output || data.result || data.summary)) || 'Slutförd';
-      Toast.info(`${stepLabel}: ${outputMsg}`, 3000);
+      const stepData = data.step_data || {};
+      const outputMsg = stepData.output || data.output || 'Slutförd';
+      if (stepDetailsBody) stepDetailsBody.textContent = `[${data.agent_name}] ${outputMsg}`;
+      Toast.info(`${data.agent_name} (${stepLabel}): ${outputMsg}`, 3000);
     } catch (err) {
       console.error('Step error:', err);
       Toast.warning('Agent-steg misslyckades — kontrollera servern.');
@@ -581,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnRunFullLoop) btnRunFullLoop.addEventListener('click', async () => {
     if (state.isAgentRunning) return;
     state.isAgentRunning = true;
-    if (agentStatusBadge) agentStatusBadge.textContent = 'Kör agentloop...';
+    if (agentStatusBadge) agentStatusBadge.textContent = `Kör ${state.currentAgent}...`;
     btnRunFullLoop.disabled = true;
 
     // Animate steps visually with delays
@@ -594,15 +618,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/agent/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: state.currentRole, scope: state.currentScope, context: state.contextPacket })
+        body: JSON.stringify({
+          agent_name: state.currentAgent,
+          role: state.currentRole,
+          scope: state.currentScope,
+          context: state.contextPacket
+        })
       });
       const result = await res.json();
       state.agentResult = result;
 
       if (agentStatusBadge) agentStatusBadge.textContent = 'Slutförd (100%)';
-      if (stepDetailsTitle) stepDetailsTitle.textContent = 'Agentloop Slutförd: 4 Optimerade Möjligheter';
-      if (stepDetailsBody) stepDetailsBody.textContent = `Genererade ${result.recommendations.length} rekommendationer. Verifierad besparing: ${result.metrics_summary.verified_tax_savings_sek} SEK.`;
-      Toast.success(`Agentloop klar! ${result.recommendations.length} rekommendationer genererade.`);
+      if (stepDetailsTitle) stepDetailsTitle.textContent = `${result.agent_name} Körning Slutförd`;
+      const recs = result.recommendations && result.recommendations.length ? result.recommendations.join(' • ') : 'Inga aktiva förslag.';
+      if (stepDetailsBody) stepDetailsBody.textContent = `Rekommendationer: ${recs}`;
+      Toast.success(`${result.agent_name} klar! ${(result.recommendations || []).length} rekommendationer genererade.`);
     } catch (err) {
       console.error('Agent run error:', err);
       Toast.error('Agentloop misslyckades. Servern kanske inte svarar.');
@@ -712,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function switchWindow(windowId) {
+  async function switchWindow(windowId) {
     if (state.currentWindow === windowId) return;
     state.currentWindow = windowId;
     renderWindowSidebar();
@@ -728,12 +758,191 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => { perspectiveBadge.style.boxShadow = ''; }, 600);
     }
 
-    // For non-W5 windows show an informational toast (full window modules are P1)
-    if (windowId !== 'W5') {
-      Toast.info(`${windowId}: ${winDef ? winDef.desc : windowId} — Modul under konstruktion (P1).`, 3500);
-    } else {
-      Toast.success('W5: Ekonomihantering — Aktiv', 2000);
+    if (windowId === 'W5') {
+      if (perspectiveDynamicContainer) perspectiveDynamicContainer.style.display = 'none';
+      if (perspectiveDefaultW5Container) perspectiveDefaultW5Container.style.display = 'block';
+      Toast.success('W5: Ekonomihantering — Skatteoptimering aktiv', 2000);
+      return;
     }
+
+    // Fetch live data for windows W1-W4, W6-W9
+    try {
+      if (perspectiveDefaultW5Container) perspectiveDefaultW5Container.style.display = 'none';
+      if (perspectiveDynamicContainer) {
+        perspectiveDynamicContainer.style.display = 'flex';
+        perspectiveDynamicContainer.innerHTML = `<div style="color: var(--text-dim); font-size: 0.8rem; padding: 8px;">Laddar ${windowId}...</div>`;
+      }
+
+      const res = await fetch(`/api/window/${windowId}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      renderPerspectiveCard(windowId, winDef, data);
+      Toast.info(`${windowId}: ${winDef ? winDef.label : windowId} laddat.`, 2500);
+    } catch (err) {
+      console.error(`Error loading window ${windowId}:`, err);
+      Toast.warning(`Kunde inte ladda data för ${windowId}: ${err.message}`, 3000);
+    }
+  }
+
+  function renderPerspectiveCard(windowId, winDef, data) {
+    if (!perspectiveDynamicContainer) return;
+    let html = `
+      <div class="perspective-card">
+        <div class="perspective-card-title">
+          <span>${winDef ? winDef.icon : '🌐'}</span>
+          <span>${data.title || windowId}</span>
+        </div>
+    `;
+
+    if (windowId === 'W1') {
+      html += `
+        <div class="metric-grid-2x2">
+          <div class="metric-card-mini"><div class="label">Relevans</div><div class="val positive">94%</div></div>
+          <div class="metric-card-mini"><div class="label">Trender</div><div class="val">${(data.active_trends || []).length} aktiva</div></div>
+        </div>
+        <ul class="perspective-list">
+          ${(data.strategic_opportunities || []).map(o => `<li><strong>${o.title}</strong>: +${o.value_sek.toLocaleString('sv-SE')} SEK</li>`).join('')}
+        </ul>
+      `;
+    } else if (windowId === 'W2') {
+      html += `
+        <div class="metric-grid-2x2">
+          <div class="metric-card-mini"><div class="label">Matchscore</div><div class="val positive">${data.optimal_matching_score * 100}%</div></div>
+          <div class="metric-card-mini"><div class="label">Resurstillgång</div><div class="val">3 lediga</div></div>
+        </div>
+        <ul class="perspective-list">
+          ${(data.matched_packages || []).map(p => `<li><strong>${p.name}</strong> (${p.vat_treatment})</li>`).join('')}
+        </ul>
+      `;
+    } else if (windowId === 'W3') {
+      html += `
+        <div class="metric-grid-2x2">
+          <div class="metric-card-mini"><div class="label">Regelefterlevnad</div><div class="val positive">${data.compliance_score * 100}%</div></div>
+          <div class="metric-card-mini"><div class="label">Kundnöjdhet (CSAT)</div><div class="val positive">${data.customer_feedback_csat} / 5.0</div></div>
+        </div>
+        <ul class="perspective-list">
+          ${(data.audit_checkpoints || []).map(c => `<li>✓ ${c.name} [${c.status}]</li>`).join('')}
+        </ul>
+      `;
+    } else if (windowId === 'W4') {
+      html += `
+        <div class="metric-grid-2x2">
+          <div class="metric-card-mini"><div class="label">Kapacitetsutnyttjande</div><div class="val">${data.capacity_utilization_pct}%</div></div>
+          <div class="metric-card-mini"><div class="label">Rörelsekapital</div><div class="val positive">${data.working_capital_available_sek.toLocaleString('sv-SE')} kr</div></div>
+        </div>
+        <ul class="perspective-list">
+          ${(data.allocations_by_department || []).map(a => `<li>${a.department}: ${a.hours_allocated}h (${a.budget_share_pct}% budget)</li>`).join('')}
+        </ul>
+      `;
+    } else if (windowId === 'W6') {
+      html += `
+        <div class="metric-grid-2x2">
+          <div class="metric-card-mini"><div class="label">Team Health Index</div><div class="val positive">${data.team_health_index}/100</div></div>
+          <div class="metric-card-mini"><div class="label">Belastningsbalans</div><div class="val positive">${data.workload_distribution_score}/100</div></div>
+        </div>
+        <ul class="perspective-list">
+          ${(data.roles_configured || []).map(r => `<li><strong>${r.role}</strong>: ${r.mandate}</li>`).join('')}
+        </ul>
+      `;
+    } else if (windowId === 'W7') {
+      html += `
+        <div class="metric-grid-2x2">
+          <div class="metric-card-mini"><div class="label">Kanaler</div><div class="val">${(data.active_channels || []).length} aktiva</div></div>
+          <div class="metric-card-mini"><div class="label">Status</div><div class="val positive">60 FPS Realtime</div></div>
+        </div>
+        <ul class="perspective-list">
+          ${(data.recent_broadcasts || []).map(b => `<li><strong>${b.sender}</strong>: ${b.msg}</li>`).join('')}
+        </ul>
+      `;
+    } else if (windowId === 'W8') {
+      html += `
+        <div class="metric-grid-2x2">
+          <div class="metric-card-mini"><div class="label">Aktiva Piloter</div><div class="val positive">${data.active_pilots_count} st</div></div>
+          <div class="metric-card-mini"><div class="label">FoU-avdrag</div><div class="val positive">Kvalificerad</div></div>
+        </div>
+        <ul class="perspective-list">
+          ${(data.pipeline_stages || []).map(s => `<li>[${s.stage}] ${s.initiative} (${s.status})</li>`).join('')}
+        </ul>
+      `;
+    } else if (windowId === 'W9') {
+      html += `
+        <div class="metric-grid-2x2">
+          <div class="metric-card-mini"><div class="label">Adaptivitet</div><div class="val positive">${data.system_adaptivity_score}%</div></div>
+          <div class="metric-card-mini"><div class="label">Meta-Lärande</div><div class="val positive">Aktiv</div></div>
+        </div>
+        <ul class="perspective-list">
+          ${(data.early_signals || []).map(s => `<li>⚠️ ${s.signal} (${Math.round(s.probability * 100)}% sannolikhet)</li>`).join('')}
+        </ul>
+      `;
+    }
+
+    html += `</div>`;
+    perspectiveDynamicContainer.innerHTML = html;
+  }
+
+  // ─── Header Multi-Agent & Fortnox Actions ──────────────────────────────────
+
+  if (btnRun12AgentLoop) {
+    btnRun12AgentLoop.addEventListener('click', async () => {
+      Toast.info('⚡ Startar 12-Agent Sluten Loop...', 2000);
+      try {
+        const res = await fetch('/api/agents/loop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: state.currentRole, scope: state.currentScope })
+        });
+        const data = await res.json();
+        if (data.results) {
+          data.results.forEach((ag, idx) => {
+            setTimeout(() => {
+              Toast.info(`${ag.agent_name}: ${ag.recommendations[0] || 'Slutförd'}`, 2500);
+            }, idx * 400);
+          });
+          setTimeout(() => {
+            Toast.success(`✓ Samtliga ${data.executed_agents_count} agenter konvergerade i sluten loop!`, 4000);
+          }, data.results.length * 400 + 500);
+        }
+      } catch (err) {
+        Toast.warning(`Fel i 12-agent loop: ${err.message}`, 3000);
+      }
+    });
+  }
+
+  if (btnFortnoxSync) {
+    btnFortnoxSync.addEventListener('click', async () => {
+      Toast.info('📊 Hämtar levande Fortnox ERP telemetri...', 2000);
+      try {
+        const res = await fetch('/api/fortnox/summary');
+        const data = await res.json();
+        const metrics = data.team_dynamics_metrics;
+        if (metrics) {
+          animateCounter(telGrossTurnover, 115000, 142500, 1000, ' SEK');
+          animateCounter(telPotentialSavings, 5296, 21200, 1000, '+', ' SEK');
+          animateCounter(telEfficiency, 95.4, metrics.team_health_index, 1000, '', '%');
+          Toast.success(`Fortnox Telemetri synkad: Team Health Index ${metrics.team_health_index}/100, Beslutstid ${metrics.decision_time_avg_days} dagar`, 4000);
+        }
+      } catch (err) {
+        Toast.warning(`Fortnox synkroniseringsfel: ${err.message}`, 3000);
+      }
+    });
+  }
+
+  if (btnToggleERD) {
+    btnToggleERD.addEventListener('click', async () => {
+      Toast.info('🌐 Laddar Universal ERD Kunskapsgraf (15 Entiteter)...', 2000);
+      try {
+        const res = await fetch('/api/erd/graph');
+        const data = await res.json();
+        if (data.nodes) {
+          canvas.loadData(data);
+          if (canvasNodeCount) canvasNodeCount.textContent = `${data.count} Noder (Universal ERD)`;
+          Toast.success('Universal ERD Kunskapsgraf aktiv (15 Entiteter)', 3500);
+        }
+      } catch (err) {
+        Toast.warning(`Kunde inte ladda ERD-graf: ${err.message}`, 3000);
+      }
+    });
   }
 
   // ─── Keyboard Shortcuts ───────────────────────────────────────────────────
