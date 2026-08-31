@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "antigravity-sandbox": {
+      "command": "python",
+      "args": ["-m", "antigravity.mcp.runner"],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "E2B_API_KEY": "${env:E2B_API_KEY}",
+        "ANTIGRAVITY_SANDBOX_MODE": "auto",
+        "ANTIGRAVITY_LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}

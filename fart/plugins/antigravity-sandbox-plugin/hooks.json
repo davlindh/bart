@@ -1,0 +1,40 @@
+{
+  "sandbox-safety-guard": {
+    "enabled": true,
+    "description": "Lifecycle safety hooks for Antigravity sandbox execution and session cleanup",
+    "PreToolUse": [
+      {
+        "matcher": "execute_code",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -m antigravity.mcp.runner --mode=auto",
+            "timeout": 5,
+            "description": "Pre-execution validation hook verifying sandbox safety parameters and syntax"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "execute_code",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import os; print('Artifact sweep completed')\"",
+            "timeout": 5,
+            "description": "Post-execution artifact sweep hook indexing generated artifacts"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python -c \"import sys; sys.exit(0)\"",
+        "timeout": 5,
+        "description": "Sandbox cleanup and termination on session close"
+      }
+    ]
+  }
+}

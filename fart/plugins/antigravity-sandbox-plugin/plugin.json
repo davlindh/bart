@@ -1,0 +1,52 @@
+{
+  "name": "antigravity-sandbox-plugin",
+  "version": "0.2.0",
+  "description": "High-security E2B Firecracker microVM execution engine with local AST fallback, background worker daemon scheduler, real local model inference, and SQLite disk persistence for autonomous agents.",
+  "author": {
+    "name": "Antigravity Team",
+    "email": "antigravity-dev@google.com"
+  },
+  "repository": "https://github.com/google-antigravity/antigravity-sandbox-plugin",
+  "license": "Apache-2.0",
+  "keywords": [
+    "antigravity",
+    "mcp",
+    "sandbox",
+    "e2b",
+    "firecracker",
+    "microvm",
+    "repl",
+    "service-workers",
+    "scheduler",
+    "local-models",
+    "nemotron",
+    "persistence",
+    "sqlite",
+    "inference",
+    "transformers",
+    "safetensors"
+  ],
+  "mcpServers": {
+    "antigravity-sandbox": {
+      "command": "python",
+      "args": ["-m", "antigravity.mcp.runner"],
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "E2B_API_KEY": "${env:E2B_API_KEY}",
+        "ANTIGRAVITY_SANDBOX_MODE": "auto",
+        "ANTIGRAVITY_LOG_LEVEL": "INFO"
+      }
+    }
+  },
+  "skills": [
+    "skills/sandbox-execution",
+    "skills/worker-orchestration",
+    "skills/snapshot-management",
+    "skills/local-inference",
+    "skills/disk-persistence"
+  ],
+  "rules": [
+    "rules/AGENTS.md"
+  ],
+  "hooks": "hooks.json"
+}

@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "json-rules-engine": "^6.5.0"
+  }
+}

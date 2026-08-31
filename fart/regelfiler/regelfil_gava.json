@@ -1,0 +1,822 @@
+{
+    "meta": [
+        {
+            "name": "rulesetName",
+            "value": "Gåvor"
+        },
+        {
+            "name": "rulesArea",
+            "value": "Skattefria gåvor till anställda"
+        },
+        {
+            "name": "rulesAreaId",
+            "value": "Skattefriagavortillanstallda1.1 "
+        },
+        {
+            "name": "rulesVersion"
+        },
+        {
+            "name": "rulesVersionText",
+            "value": "Denna regelfil tillämpas från och med beskattningsåret 2024. Specifikationen svarar på frågor om när man som arbetsgivare kan lämna julgåvor, jubileumsgåvor eller minnesgåvor till en anställd utan att det uppkommer skattekonsekvenser för den anställda eller en skyldighet för arbetsgivaren att göra skatteavdrag och betala arbetsgivaravgifter. Specifikationen gäller enbart gåvor som lämnas till anställda med en sammanhängande anställning.\nOm gåvan är skattefri ska arbetsgivaren inte betala arbetsgivaravgifter och värdet av gåvan ska inte ingå i underlaget för skatteavdrag. Skulle däremot gåvan vara skattepliktig ska den anställda beskattas för värdet av gåvan. Arbetsgivaren ska då betala arbetsgivaravgifter och gåvans värde ska ingå i underlaget för skatteavdrag."
+        }
+    ],
+    "attributes": [
+        {
+            "name": "Ges gåvan i form av pengar?",
+            "type": "string"
+        },
+        {
+            "name": "Vad är det för typ av gåva?",
+            "type": "string"
+        },
+        {
+            "name": "Är gåvans marknadsvärde högre än 550 kr inklusive mervärdesskatt?",
+            "type": "string"
+        },
+        {
+            "name": "Ges gåvan till alla anställda alternativt en större grupp av anställda?",
+            "type": "string"
+        },
+        {
+            "name": "Ges gåvan i samband med att arbetsgivaren firar 25-, 50-, 75- eller 100-årsjubileum o.s.v.?",
+            "type": "string"
+        },
+        {
+            "name": "Är gåvans marknadsvärde högre än 1 650 kr inklusive mervärdesskatt?",
+            "type": "string"
+        },
+        {
+            "name": "Lämnas gåvan till en varaktigt anställd?",
+            "type": "string"
+        },
+        {
+            "name": "Är gåvans marknadsvärde högre än 15 000 kr inklusive mervärdesskatt?",
+            "type": "string"
+        },
+        {
+            "name": "Har minnesgåva redan lämnats vid ett tidigare tillfälle?",
+            "type": "string"
+        },
+        {
+            "name": "Lämnas den nuvarande gåvan i samband med att anställningen upphör?",
+            "type": "string"
+        },
+        {
+            "name": "Vid vilket tillfället ges gåvan?",
+            "type": "string"
+        }
+    ],
+    "rules": [
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "SKV A 2023:20",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Julgåva"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 550 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig (Hela värdet är skattepliktigt)",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig (Hela värdet är skattepliktigt)",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "SKV A 2023:20"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Julgåva"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 550 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Ges gåvan till alla anställda alternativt en större grupp av anställda?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "SKV A 2023:20",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Julgåva"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 550 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Ges gåvan till alla anställda alternativt en större grupp av anställda?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattefri",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattefri",
+                            "sources": [
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 12 § SAL",
+                                "SKV A 2023:20",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Jubileumsgåva"
+                    },
+                    {
+                        "fact": "Ges gåvan i samband med att arbetsgivaren firar 25-, 50-, 75- eller 100-årsjubileum o.s.v.?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Jubileumsgåva"
+                    },
+                    {
+                        "fact": "Ges gåvan i samband med att arbetsgivaren firar 25-, 50-, 75- eller 100-årsjubileum o.s.v.?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 1 650 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig (Hela värdet är skattepliktigt)",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig (Hela värdet är skattepliktigt)",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "SKV A 2023:20",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Jubileumsgåva"
+                    },
+                    {
+                        "fact": "Ges gåvan i samband med att arbetsgivaren firar 25-, 50-, 75- eller 100-årsjubileum o.s.v.?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 1 650 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Ges gåvan till alla anställda alternativt en större grupp av anställda?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "SKV A 2023:20",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Jubileumsgåva"
+                    },
+                    {
+                        "fact": "Ges gåvan i samband med att arbetsgivaren firar 25-, 50-, 75- eller 100-årsjubileum o.s.v.?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 1 650 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Ges gåvan till alla anställda alternativt en större grupp av anställda?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattefri",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattefri",
+                            "sources": [
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 12 § SAL",
+                                "SKV A 2023:20",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Minnesgåva"
+                    },
+                    {
+                        "fact": "Lämnas gåvan till en varaktigt anställd?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "SKV A 2023:20"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Minnesgåva"
+                    },
+                    {
+                        "fact": "Lämnas gåvan till en varaktigt anställd?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 15 000 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig (Hela värdet är skattepliktigt)",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig (Hela värdet är skattepliktigt)",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "SKV A 2023:20"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Minnesgåva"
+                    },
+                    {
+                        "fact": "Lämnas gåvan till en varaktigt anställd?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 15 000 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Har minnesgåva redan lämnats vid ett tidigare tillfälle?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Lämnas den nuvarande gåvan i samband med att anställningen upphör?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattefri",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattefri",
+                            "sources": [
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 12 § SAL",
+                                "SKV A 2023:20"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Minnesgåva"
+                    },
+                    {
+                        "fact": "Lämnas gåvan till en varaktigt anställd?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 15 000 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Har minnesgåva redan lämnats vid ett tidigare tillfälle?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Lämnas den nuvarande gåvan i samband med att anställningen upphör?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "SKV A 2023:20"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Minnesgåva"
+                    },
+                    {
+                        "fact": "Lämnas gåvan till en varaktigt anställd?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 15 000 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Har minnesgåva redan lämnats vid ett tidigare tillfälle?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vid vilket tillfället ges gåvan?",
+                        "operator": "equal",
+                        "value": "Den anställda uppnår en viss ålder (jämna födelseår från 50 år och uppåt)"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattefri",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattefri"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Minnesgåva"
+                    },
+                    {
+                        "fact": "Lämnas gåvan till en varaktigt anställd?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 15 000 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Har minnesgåva redan lämnats vid ett tidigare tillfälle?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vid vilket tillfället ges gåvan?",
+                        "operator": "equal",
+                        "value": "Efter en längre tids anställning (minst 20 år)"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattefri",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattefri",
+                            "sources": [
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 12 § SAL",
+                                "SKV A 2023:20",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Minnesgåva"
+                    },
+                    {
+                        "fact": "Lämnas gåvan till en varaktigt anställd?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 15 000 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Har minnesgåva redan lämnats vid ett tidigare tillfälle?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vid vilket tillfället ges gåvan?",
+                        "operator": "equal",
+                        "value": "När anställningen upphör"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattefri",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattefri",
+                            "sources": [
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 12 § SAL",
+                                "SKV A 2023:20",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Minnesgåva"
+                    },
+                    {
+                        "fact": "Lämnas gåvan till en varaktigt anställd?",
+                        "operator": "equal",
+                        "value": "Ja"
+                    },
+                    {
+                        "fact": "Är gåvans marknadsvärde högre än 15 000 kr inklusive mervärdesskatt?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Har minnesgåva redan lämnats vid ett tidigare tillfälle?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vid vilket tillfället ges gåvan?",
+                        "operator": "equal",
+                        "value": "Annat tillfälle"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Gåvan är skattepliktig",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Gåvan är skattepliktig",
+                            "sources": [
+                                "11 kap. 1 § IL",
+                                "11 kap. 14 § IL",
+                                "10 kap. 2 § SFL",
+                                "2 kap. 1 och 10 §§ SAL",
+                                "SKV A 2023:20",
+                                "Prop. 1987/88:52"
+                            ]
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "conditions": {
+                "all": [
+                    {
+                        "fact": "Ges gåvan i form av pengar?",
+                        "operator": "equal",
+                        "value": "Nej"
+                    },
+                    {
+                        "fact": "Vad är det för typ av gåva?",
+                        "operator": "equal",
+                        "value": "Andra gåvor"
+                    }
+                ]
+            },
+            "event": {
+                "type": "Annat regelområde",
+                "params": {
+                    "results": [
+                        {
+                            "name": "Annat regelområde"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
