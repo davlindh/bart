@@ -1,6 +1,9 @@
 """Fortnox data integration and computation engine."""
 
 from .models import (
+    FortnoxCustomer,
+    FortnoxCustomerType,
+    FortnoxVATType,
     FortnoxInvoice,
     FortnoxInvoiceRow,
     FortnoxEmployee,
@@ -12,6 +15,9 @@ from .models import (
 from .computations import FortnoxComputationPipeline
 
 __all__ = [
+    "FortnoxCustomer",
+    "FortnoxCustomerType",
+    "FortnoxVATType",
     "FortnoxInvoice",
     "FortnoxInvoiceRow",
     "FortnoxEmployee",
@@ -21,3 +27,4 @@ __all__ = [
     "FortnoxVoucherRow",
     "FortnoxComputationPipeline",
 ]
+

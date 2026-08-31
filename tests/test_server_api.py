@@ -79,3 +79,11 @@ def test_server_windows_and_fortnox_endpoints():
     erd = handler._get_erd_graph_data()
     assert erd["count"] >= 15
     assert len(erd["links"]) >= 10
+
+    # Test Fortnox Customers API helper
+    cust_data = handler._get_fortnox_customers_data()
+    assert cust_data["count"] >= 4
+    assert len(cust_data["customers"]) >= 4
+    assert cust_data["total_potential_tax_savings_sek"] > 0
+    assert any(c["rut_eligible"] for c in cust_data["customers"])
+

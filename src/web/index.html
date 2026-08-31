@@ -88,11 +88,15 @@
           <button id="btnFortnoxSync" class="btn-hud-action secondary" title="Hämta och beräkna levande Fortnox ERP data">
             📊 Fortnox Live
           </button>
+          <button id="btnFortnoxCustomers" class="btn-hud-action cyan" title="Visa Fortnox Kundregister & Skatteteletri (/3/customers)">
+            👥 Kunder (Fortnox)
+          </button>
           <button id="btnToggleERD" class="btn-hud-action purple" title="Visa Universal ERD Graf (15 Entiteter)">
             🌐 ERD Graf
           </button>
         </div>
       </div>
+
 
       <!-- Quick Telemetry Summary -->
       <div class="telemetry-strip">
@@ -433,8 +437,62 @@
   </div>
   </div><!-- /.hud-root -->
 
+  <!-- Fortnox Customers & Tax Telemetry Modal -->
+  <div class="customer-modal-overlay" id="customerModalOverlay" style="display: none;">
+    <div class="customer-modal">
+      <div class="customer-modal-header">
+        <div class="modal-title-group">
+          <span class="panel-dot cyan"></span>
+          <div>
+            <h3>FORTNOX KUNDREGISTER & SKATTETELEMETRI</h3>
+            <span class="modal-subtitle">Realtidsbearbetning av kunddata, RUT-avdrag, VMB och betalningsdisciplin (/3/customers)</span>
+          </div>
+        </div>
+        <button id="btnCloseCustomerModal" class="btn-icon" title="Stäng kundvy">✕</button>
+      </div>
+
+      <!-- Customer KPI Strip -->
+      <div class="customer-kpi-strip">
+        <div class="cust-kpi-card">
+          <div class="kpi-label">TOTALT ANTAL KUNDER</div>
+          <div class="kpi-val" id="custKpiCount">5 st</div>
+        </div>
+        <div class="cust-kpi-card">
+          <div class="kpi-label">SAMMANLAGD OMSÄTTNING</div>
+          <div class="kpi-val" id="custKpiTurnover">137 500 SEK</div>
+        </div>
+        <div class="cust-kpi-card highlight">
+          <div class="kpi-label">SKATTEOPTIMERINGSPOTENTIAL</div>
+          <div class="kpi-val savings" id="custKpiSavings">+17 200 SEK</div>
+        </div>
+        <div class="cust-kpi-card">
+          <div class="kpi-label">KUNDKATEGORIER</div>
+          <div class="kpi-val" id="custKpiCategories">B2C RUT • VMB • Omvänd Byggmoms</div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Controls -->
+      <div class="customer-filter-bar">
+        <input type="text" id="custSearchInput" class="hud-input" placeholder="Sök kund, org.nr eller skatteprofil...">
+        <div class="filter-pills" id="custFilterPills">
+          <button class="filter-pill active" data-filter="ALL">Alla (5)</button>
+          <button class="filter-pill" data-filter="RUT">RUT-Kunder</button>
+          <button class="filter-pill" data-filter="VMB">VMB-Begagnat</button>
+          <button class="filter-pill" data-filter="BYGG">Omvänd Byggmoms</button>
+          <button class="filter-pill" data-filter="COMPANY">Företag B2B</button>
+        </div>
+      </div>
+
+      <!-- Customer Cards Grid -->
+      <div class="customer-cards-grid" id="customerCardsGrid">
+        <!-- Dynamically rendered customer cards -->
+      </div>
+    </div>
+  </div>
+
   <script src="toast.js"></script>
   <script src="canvas.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
+

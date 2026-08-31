@@ -78,7 +78,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const perspectiveDefaultW5Container = document.getElementById('perspectiveDefaultW5Container');
   const btnRun12AgentLoop    = document.getElementById('btnRun12AgentLoop');
   const btnFortnoxSync       = document.getElementById('btnFortnoxSync');
+  const btnFortnoxCustomers  = document.getElementById('btnFortnoxCustomers');
   const btnToggleERD         = document.getElementById('btnToggleERD');
+
+  const customerModalOverlay = document.getElementById('customerModalOverlay');
+  const btnCloseCustomerModal = document.getElementById('btnCloseCustomerModal');
+  const customerCardsGrid    = document.getElementById('customerCardsGrid');
+  const custSearchInput      = document.getElementById('custSearchInput');
+  const custFilterPills      = document.getElementById('custFilterPills');
+  const custKpiCount         = document.getElementById('custKpiCount');
+  const custKpiTurnover      = document.getElementById('custKpiTurnover');
+  const custKpiSavings       = document.getElementById('custKpiSavings');
+
+  let loadedCustomers = [];
+  let currentCustFilter = 'ALL';
+
 
   // ─── Spatial Canvas Init ─────────────────────────────────────────────────
 
@@ -944,6 +958,168 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ─── Fortnox Customers Modal Controller ────────────────────────────────────
+
+  async function openCustomerModal() {
+    if (!customerModalOverlay) return;
+    customerModalOverlay.style.display = 'flex';
+    Toast.info('👥 Hämtar Fortnox kundregister & skattetelemetri...', 1800);
+    try {
+      const res = await fetch('/api/fortnox/customers');
+      const data = await res.json();
+      loadedCustomers = data.customers || [];
+
+      if (custKpiCount) custKpiCount.textContent = `${loadedCustomers.length} st`;
+      if (custKpiTurnover) custKpiTurnover.textContent = `${Math.round(data.total_turnover_sek || 0).toLocaleString('sv-SE')} SEK`;
+      if (custKpiSavings) custKpiSavings.textContent = `+${Math.round(data.total_potential_tax_savings_sek || 0).toLocaleString('sv-SE')} SEK`;
+
+      renderCustomerCards();
+      Toast.success(`✓ ${loadedCustomers.length} Fortnox-kunder analyserade & skatteklassificerade!`, 3500);
+    } catch (err) {
+      Toast.warning(`Kunde inte ladda kunder: ${err.message}`, 3000);
+    }
+  }
+
+  function closeCustomerModal() {
+    if (customerModalOverlay) customerModalOverlay.style.display = 'none';
+  }
+
+  function renderCustomerCards() {
+    if (!customerCardsGrid) return;
+    const query = (custSearchInput?.value || '').toLowerCase().trim();
+
+    const filtered = loadedCustomers.filter(c => {
+      const matchQuery = !query ||
+        c.name.toLowerCase().includes(query) ||
+        c.customer_number.toLowerCase().includes(query) ||
+        (c.organisation_number && c.organisation_number.includes(query)) ||
+        c.tax_profile_classification.toLowerCase().includes(query) ||
+        (c.city && c.city.toLowerCase().includes(query));
+
+      if (!matchQuery) return false;
+
+      if (currentCustFilter === 'ALL') return true;
+      if (currentCustFilter === 'RUT') return c.rut_eligible;
+      if (currentCustFilter === 'VMB') return c.tax_profile_classification.includes('VMB');
+      if (currentCustFilter === 'BYGG') return c.tax_profile_classification.includes('Byggmoms') || c.tax_profile_classification.includes('Omvänd');
+      if (currentCustFilter === 'COMPANY') return c.customer_type === 'COMPANY';
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      customerCardsGrid.innerHTML = `
+        <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-dim);">
+          Inga kunder matchar filtreringen.
+        </div>
+      `;
+      return;
+    }
+
+    customerCardsGrid.innerHTML = filtered.map(c => {
+      const isCompany = c.customer_type === 'COMPANY';
+      let taxBadgeClass = 'cust-tax-badge';
+      let taxBadgeIcon = '🏷️';
+      if (c.tax_profile_classification.includes('VMB')) {
+        taxBadgeClass += ' vmb';
+        taxBadgeIcon = '🔄';
+      } else if (c.tax_profile_classification.includes('Byggmoms') || c.tax_profile_classification.includes('Omvänd')) {
+        taxBadgeClass += ' reverse';
+        taxBadgeIcon = '🏗️';
+      } else if (c.tax_profile_classification.includes('RUT')) {
+        taxBadgeIcon = '🏡';
+      }
+
+      let paymentPillClass = 'cust-payment-pill';
+      if (c.credit_risk_rating === 'LÅG') paymentPillClass += ' positive';
+      else if (c.credit_risk_rating === 'FÖRHÖJD') paymentPillClass += ' warning';
+
+      return `
+        <div class="customer-card">
+          <div class="cust-card-top">
+            <div>
+              <div class="cust-name">${c.name}</div>
+              <div class="cust-submeta">${c.customer_number} • ${c.organisation_number} • ${c.city}</div>
+            </div>
+            <span class="cust-type-badge ${isCompany ? 'company' : 'private'}">
+              ${isCompany ? 'Företag B2B' : 'Privatperson B2C'}
+            </span>
+          </div>
+
+          <div>
+            <span class="${taxBadgeClass}">${taxBadgeIcon} ${c.tax_profile_classification}</span>
+          </div>
+
+          <div class="cust-stats-grid">
+            <div class="cust-stat">
+              <span class="cust-stat-label">Total Omsättning</span>
+              <span class="cust-stat-val">${Math.round(c.total_invoiced_gross).toLocaleString('sv-SE')} kr</span>
+            </div>
+            <div class="cust-stat">
+              <span class="cust-stat-label">Skattebesparing</span>
+              <span class="cust-stat-val savings">+${Math.round(c.potential_tax_savings_sek).toLocaleString('sv-SE')} kr</span>
+            </div>
+            <div class="cust-stat">
+              <span class="cust-stat-label">Fakturor / Betalning</span>
+              <span class="cust-stat-val">${c.invoices_count} st • ${c.payment_terms_days}d villkor</span>
+            </div>
+            <div class="cust-stat">
+              <span class="cust-stat-label">Kreditrisk / Friktion</span>
+              <span class="cust-stat-val">${c.credit_risk_rating} (Index ${c.friction_index})</span>
+            </div>
+          </div>
+
+          <div class="cust-card-bottom">
+            <span class="${paymentPillClass}">${c.payment_status} (${c.avg_payment_delay_days > 0 ? '+' : ''}${c.avg_payment_delay_days}d)</span>
+            <button class="btn-cust-action" onclick="window.focusCustomerInERD('${c.customer_number}', '${c.name.replace(/'/g, "\\'")}')">
+              🌐 Fokusera i ERD
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.focusCustomerInERD = (custNum, custName) => {
+    closeCustomerModal();
+    if (btnToggleERD) btnToggleERD.click();
+    setTimeout(() => {
+      Toast.info(`Fokuserar på kund: ${custName} (${custNum}) i Universal ERD`, 3500);
+    }, 500);
+  };
+
+  if (btnFortnoxCustomers) {
+    btnFortnoxCustomers.addEventListener('click', openCustomerModal);
+  }
+
+  if (btnCloseCustomerModal) {
+    btnCloseCustomerModal.addEventListener('click', closeCustomerModal);
+  }
+
+  if (customerModalOverlay) {
+    customerModalOverlay.addEventListener('click', (e) => {
+      if (e.target === customerModalOverlay) closeCustomerModal();
+    });
+  }
+
+  if (custSearchInput) {
+    custSearchInput.addEventListener('input', () => {
+      renderCustomerCards();
+    });
+  }
+
+  if (custFilterPills) {
+    const pills = custFilterPills.querySelectorAll('.filter-pill');
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentCustFilter = pill.getAttribute('data-filter') || 'ALL';
+        renderCustomerCards();
+      });
+    });
+  }
+
 
   // ─── Keyboard Shortcuts ───────────────────────────────────────────────────
 

@@ -1283,3 +1283,339 @@ body {
   border-radius: 4px;
   border-left: 2px solid var(--accent-cyan);
 }
+
+/* ── Customer Modal & Telemetry Styles ────────────────────────────────── */
+.btn-hud-action.cyan {
+  border-color: rgba(6, 182, 212, 0.5);
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--accent-cyan);
+}
+
+.btn-hud-action.cyan:hover {
+  background: rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+}
+
+.customer-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 14, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.customer-modal {
+  width: 100%;
+  max-width: 1050px;
+  max-height: 88vh;
+  background: rgba(13, 19, 33, 0.94);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(6, 182, 212, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.customer-modal-header {
+  padding: 16px 22px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-title-group h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.02em;
+}
+
+.modal-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Customer KPI Strip */
+.customer-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 14px 22px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cust-kpi-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.cust-kpi-card.highlight {
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.kpi-label {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.kpi-val {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 4px;
+}
+
+.kpi-val.savings {
+  color: var(--accent-emerald);
+}
+
+/* Filter bar */
+.customer-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.hud-input {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  outline: none;
+  min-width: 280px;
+  transition: all 0.2s ease;
+}
+
+.hud-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
+}
+
+.filter-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+}
+
+.filter-pill.active {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+/* Customer Cards Grid */
+.customer-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 12px;
+  padding: 18px 22px;
+  overflow-y: auto;
+  max-height: calc(88vh - 240px);
+}
+
+.customer-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.customer-card:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.cust-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cust-name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.cust-submeta {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+.cust-type-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.cust-type-badge.company {
+  background: rgba(139, 92, 246, 0.2);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+}
+
+.cust-type-badge.private {
+  background: rgba(6, 182, 212, 0.2);
+  color: #67e8f9;
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+/* Tax profile badge in card */
+.cust-tax-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--accent-emerald);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.cust-tax-badge.vmb {
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--accent-amber);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.cust-tax-badge.reverse {
+  background: rgba(168, 85, 247, 0.12);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.cust-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.cust-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.cust-stat-label {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.cust-stat-val {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.cust-stat-val.savings {
+  color: var(--accent-emerald);
+}
+
+.cust-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.cust-payment-pill {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+}
+
+.cust-payment-pill.positive {
+  color: var(--accent-emerald);
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.cust-payment-pill.warning {
+  color: var(--accent-amber);
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.btn-cust-action {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  color: var(--accent-cyan);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-cust-action:hover {
+  background: rgba(6, 182, 212, 0.3);
+}
+

@@ -1,9 +1,41 @@
-"""Fortnox API Data Models: Pydantic schemas for Fortnox ERP entities.
-Covers Invoices, Employees, Salaries, Time-reports, Projects, Cost Centers, and Vouchers.
-"""
-
+from enum import Enum
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
+
+
+class FortnoxCustomerType(str, Enum):
+    PRIVATE = "PRIVATE"
+    COMPANY = "COMPANY"
+
+
+class FortnoxVATType(str, Enum):
+    SEVAT = "SEVAT"
+    SEREVERSEDVAT = "SEREVERSEDVAT"  # Omvänd byggmoms
+    EUVAT = "EUVAT"
+    EXPORT = "EXPORT"
+
+
+class FortnoxCustomer(BaseModel):
+    """Fortnox Customer entity corresponding to Fortnox API /3/customers."""
+    customer_number: str
+    name: str
+    customer_type: FortnoxCustomerType = FortnoxCustomerType.PRIVATE
+    organisation_number: Optional[str] = None  # Org.nr or Personnummer
+    vat_type: FortnoxVATType = FortnoxVATType.SEVAT
+    vat_number: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address1: Optional[str] = None
+    city: Optional[str] = None
+    zip_code: Optional[str] = None
+    payment_terms_days: int = 14
+    credit_limit: float = 50000.0
+    rut_eligible: bool = True
+    has_f_skatt: bool = False
+    sni_code: Optional[str] = None  # e.g., '43.120' for construction/groundwork
+    property_designation: Optional[str] = None  # Fastighetsbeteckning för ROT/RUT
+    active: bool = True
+
 
 
 class FortnoxInvoiceRow(BaseModel):

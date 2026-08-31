@@ -307,10 +307,16 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json(fortnox_data)
             return
 
+        if path == "/api/fortnox/customers":
+            customers_data = self._get_fortnox_customers_data()
+            self._send_json(customers_data)
+            return
+
         if path == "/api/erd/graph":
             erd_data = self._get_erd_graph_data()
             self._send_json(erd_data)
             return
+
 
         # Default static file handling
         if path == "/" or not path:
@@ -572,20 +578,93 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             return AdaptiveInsightsWindow.synthesize_insights({})
         return {"error": f"Fönster {window_id} hittades inte", "window_id": window_id}
 
-    def _compute_fortnox_summary(self) -> Dict[str, Any]:
-        """Runs the FortnoxComputationPipeline on realistic Swedish SMB ERP dataset."""
+    def _get_fortnox_customers_data(self) -> Dict[str, Any]:
+        """Returns Fortnox customers with real-time tax optimization potential and payment telemetry."""
         from src.fortnox import (
-            FortnoxInvoice, FortnoxInvoiceRow,
-            FortnoxEmployee, FortnoxTimeReport,
-            FortnoxProject, FortnoxComputationPipeline
+            FortnoxCustomer, FortnoxCustomerType, FortnoxVATType,
+            FortnoxInvoice, FortnoxInvoiceRow, FortnoxComputationPipeline
         )
+        customers = [
+            FortnoxCustomer(
+                customer_number="CUST-001",
+                name="Erik Johansson",
+                customer_type=FortnoxCustomerType.PRIVATE,
+                organisation_number="19840512-4321",
+                vat_type=FortnoxVATType.SEVAT,
+                email="erik.johansson@example.se",
+                phone="070-123 45 67",
+                city="Lund",
+                payment_terms_days=14,
+                credit_limit=35000.0,
+                rut_eligible=False,
+            ),
+            FortnoxCustomer(
+                customer_number="CUST-002",
+                name="Karin Lindström",
+                customer_type=FortnoxCustomerType.PRIVATE,
+                organisation_number="19781120-8765",
+                vat_type=FortnoxVATType.SEVAT,
+                email="karin.lindstrom@example.se",
+                phone="073-987 65 43",
+                city="Kävlinge",
+                payment_terms_days=14,
+                credit_limit=50000.0,
+                rut_eligible=True,
+                property_designation="Lund Solskenet 4:12",
+            ),
+            FortnoxCustomer(
+                customer_number="CUST-003",
+                name="Syd Bygg & Anläggning AB",
+                customer_type=FortnoxCustomerType.COMPANY,
+                organisation_number="556888-1234",
+                vat_type=FortnoxVATType.SEREVERSEDVAT,
+                vat_number="SE556888123401",
+                email="ekonomi@sydbygg.se",
+                phone="040-45 67 89",
+                city="Malmö",
+                payment_terms_days=30,
+                credit_limit=250000.0,
+                has_f_skatt=True,
+                sni_code="43.120",
+            ),
+            FortnoxCustomer(
+                customer_number="CUST-004",
+                name="Gröna Gårdar Entreprenad AB",
+                customer_type=FortnoxCustomerType.COMPANY,
+                organisation_number="556777-5678",
+                vat_type=FortnoxVATType.SEVAT,
+                vat_number="SE556777567801",
+                email="faktura@gronagardar.se",
+                phone="046-23 45 67",
+                city="Staffanstorp",
+                payment_terms_days=30,
+                credit_limit=100000.0,
+                has_f_skatt=True,
+                sni_code="01.610",
+            ),
+            FortnoxCustomer(
+                customer_number="CUST-005",
+                name="Bengt Olofsson",
+                customer_type=FortnoxCustomerType.PRIVATE,
+                organisation_number="19620315-9988",
+                vat_type=FortnoxVATType.SEVAT,
+                email="bengt.o@example.se",
+                phone="072-333 44 55",
+                city="Höllviken",
+                payment_terms_days=14,
+                credit_limit=25000.0,
+                rut_eligible=True,
+                property_designation="Vellinge Höllviken 12:8",
+            ),
+        ]
 
         invoices = [
             FortnoxInvoice(
                 document_number="1001", customer_number="CUST-001",
                 customer_name="Erik Johansson", invoice_date="2026-08-01", due_date="2026-08-15",
                 total=16000.0, net=12800.0,
-                rows=[FortnoxInvoiceRow(article_number="INBYTE-01", description="Begagnad Husqvarna 430X", delivered_quantity=1, price=16000.0, vat=25.0)]
+                rows=[FortnoxInvoiceRow(article_number="INBYTE-01", description="Begagnad Husqvarna 430X", delivered_quantity=1, price=16000.0, vat=25.0)],
+                is_paid=True, payment_date="2026-08-12"
             ),
             FortnoxInvoice(
                 document_number="1002", customer_number="CUST-002",
@@ -594,13 +673,114 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
                 rows=[
                     FortnoxInvoiceRow(article_number="MOWER-450X", description="Automower 450X Maskin", delivered_quantity=1, price=16000.0, vat=25.0),
                     FortnoxInvoiceRow(article_number="INST-RUT", description="Fältinstallation & Kabeldragning", delivered_quantity=1, price=8000.0, vat=25.0, is_work_cost=True),
-                ]
+                ],
+                is_paid=True, payment_date="2026-08-18"
             ),
             FortnoxInvoice(
                 document_number="1003", customer_number="CUST-003",
                 customer_name="Syd Bygg & Anläggning AB", invoice_date="2026-08-10", due_date="2026-08-24",
                 total=50000.0, net=40000.0,
-                rows=[FortnoxInvoiceRow(article_number="SCHAKT", description="Markschaktning för kabeldragning", delivered_quantity=1, price=40000.0, vat=25.0, is_work_cost=True)]
+                rows=[FortnoxInvoiceRow(article_number="SCHAKT", description="Markschaktning för kabeldragning", delivered_quantity=1, price=40000.0, vat=25.0, is_work_cost=True)],
+                is_paid=True, payment_date="2026-08-22"
+            ),
+            FortnoxInvoice(
+                document_number="1004", customer_number="CUST-004",
+                customer_name="Gröna Gårdar Entreprenad AB", invoice_date="2026-08-15", due_date="2026-09-14",
+                total=35000.0, net=28000.0,
+                rows=[FortnoxInvoiceRow(article_number="SERV-AGRI", description="Säsongsservice Traktorer & Redskap", delivered_quantity=1, price=28000.0, vat=25.0)],
+                is_paid=True, payment_date="2026-09-10"
+            ),
+            FortnoxInvoice(
+                document_number="1005", customer_number="CUST-005",
+                customer_name="Bengt Olofsson", invoice_date="2026-08-18", due_date="2026-09-01",
+                total=12500.0, net=10000.0,
+                rows=[
+                    FortnoxInvoiceRow(article_number="INBYTE-02", description="Begagnad Stihl iMow 632P inbyte", delivered_quantity=1, price=7500.0, vat=25.0),
+                    FortnoxInvoiceRow(article_number="SERV-RUT", description="Service & Vinterförvaring arbetskostnad", delivered_quantity=1, price=5000.0, vat=25.0, is_work_cost=True),
+                ],
+                is_paid=False, payment_date=None
+            ),
+        ]
+
+        telemetry = FortnoxComputationPipeline.compute_customer_telemetry(customers, invoices)
+        total_potential_savings = sum(t["potential_tax_savings_sek"] for t in telemetry)
+        total_gross = sum(t["total_invoiced_gross"] for t in telemetry)
+
+        return {
+            "source": "Fortnox API /3/customers",
+            "count": len(customers),
+            "total_turnover_sek": round(total_gross, 2),
+            "total_potential_tax_savings_sek": round(total_potential_savings, 2),
+            "customers": telemetry,
+        }
+
+    def _compute_fortnox_summary(self) -> Dict[str, Any]:
+        """Runs the FortnoxComputationPipeline on realistic Swedish SMB ERP dataset."""
+        from src.fortnox import (
+            FortnoxCustomer, FortnoxCustomerType, FortnoxVATType,
+            FortnoxInvoice, FortnoxInvoiceRow,
+            FortnoxEmployee, FortnoxTimeReport,
+            FortnoxProject, FortnoxComputationPipeline
+        )
+
+        customers_data = self._get_fortnox_customers_data()
+        customers = [
+            FortnoxCustomer(
+                customer_number=c["customer_number"],
+                name=c["name"],
+                customer_type=FortnoxCustomerType(c["customer_type"]),
+                organisation_number=c["organisation_number"],
+                vat_type=FortnoxVATType(c["vat_type"]),
+                city=c["city"],
+                payment_terms_days=c["payment_terms_days"],
+                credit_limit=c["credit_limit"],
+                rut_eligible=c["rut_eligible"],
+                sni_code=c.get("sni_code"),
+            )
+            for c in customers_data["customers"]
+        ]
+
+        invoices = [
+            FortnoxInvoice(
+                document_number="1001", customer_number="CUST-001",
+                customer_name="Erik Johansson", invoice_date="2026-08-01", due_date="2026-08-15",
+                total=16000.0, net=12800.0,
+                rows=[FortnoxInvoiceRow(article_number="INBYTE-01", description="Begagnad Husqvarna 430X", delivered_quantity=1, price=16000.0, vat=25.0)],
+                is_paid=True, payment_date="2026-08-12"
+            ),
+            FortnoxInvoice(
+                document_number="1002", customer_number="CUST-002",
+                customer_name="Karin Lindström", invoice_date="2026-08-05", due_date="2026-08-19",
+                total=24000.0, net=19200.0,
+                rows=[
+                    FortnoxInvoiceRow(article_number="MOWER-450X", description="Automower 450X Maskin", delivered_quantity=1, price=16000.0, vat=25.0),
+                    FortnoxInvoiceRow(article_number="INST-RUT", description="Fältinstallation & Kabeldragning", delivered_quantity=1, price=8000.0, vat=25.0, is_work_cost=True),
+                ],
+                is_paid=True, payment_date="2026-08-18"
+            ),
+            FortnoxInvoice(
+                document_number="1003", customer_number="CUST-003",
+                customer_name="Syd Bygg & Anläggning AB", invoice_date="2026-08-10", due_date="2026-08-24",
+                total=50000.0, net=40000.0,
+                rows=[FortnoxInvoiceRow(article_number="SCHAKT", description="Markschaktning för kabeldragning", delivered_quantity=1, price=40000.0, vat=25.0, is_work_cost=True)],
+                is_paid=True, payment_date="2026-08-22"
+            ),
+            FortnoxInvoice(
+                document_number="1004", customer_number="CUST-004",
+                customer_name="Gröna Gårdar Entreprenad AB", invoice_date="2026-08-15", due_date="2026-09-14",
+                total=35000.0, net=28000.0,
+                rows=[FortnoxInvoiceRow(article_number="SERV-AGRI", description="Säsongsservice Traktorer & Redskap", delivered_quantity=1, price=28000.0, vat=25.0)],
+                is_paid=True, payment_date="2026-09-10"
+            ),
+            FortnoxInvoice(
+                document_number="1005", customer_number="CUST-005",
+                customer_name="Bengt Olofsson", invoice_date="2026-08-18", due_date="2026-09-01",
+                total=12500.0, net=10000.0,
+                rows=[
+                    FortnoxInvoiceRow(article_number="INBYTE-02", description="Begagnad Stihl iMow 632P inbyte", delivered_quantity=1, price=7500.0, vat=25.0),
+                    FortnoxInvoiceRow(article_number="SERV-RUT", description="Service & Vinterförvaring arbetskostnad", delivered_quantity=1, price=5000.0, vat=25.0, is_work_cost=True),
+                ],
+                is_paid=False, payment_date=None
             ),
         ]
 
@@ -632,6 +812,7 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             employees=employees,
             time_reports=time_reports,
             projects=projects,
+            customers=customers,
         )
         # Convert graph to serializable structure
         result["erd_graph"] = {
@@ -643,7 +824,7 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
     def _get_erd_graph_data(self) -> Dict[str, Any]:
         """Returns nodes and links from the Universal ERD Graph."""
         fn_summary = self._compute_fortnox_summary()
-        # Create a sample ERD graph for canvas visualizer
+        # Create a rich ERD graph with organizational units, employees, roles, and customers
         nodes = [
             {"id": "org_1", "name": "Trädgård & Maskinservice AB", "type": "Organization", "domain": "Trust", "size": 32},
             {"id": "team_1", "name": "Ledning & Ekonomi", "type": "Team", "domain": "Trust", "size": 26},
@@ -654,7 +835,13 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             {"id": "emp_3", "name": "Johan Berg (Fältmontör)", "type": "Person", "domain": "Interactional Interface", "size": 20},
             {"id": "role_1", "name": "Ekonomichef", "type": "Role", "domain": "Operational", "size": 22},
             {"id": "role_2", "name": "Verkstadschef", "type": "Role", "domain": "Operational", "size": 22},
+            {"id": "cust_1", "name": "Kund: Erik Johansson (VMB-inbyte)", "type": "Customer", "domain": "Exchange", "size": 22},
+            {"id": "cust_2", "name": "Kund: Karin Lindström (RUT-kund)", "type": "Customer", "domain": "Exchange", "size": 22},
+            {"id": "cust_3", "name": "Kund: Syd Bygg & Anl. AB (Omvänd moms)", "type": "Customer", "domain": "Exchange", "size": 22},
+            {"id": "cust_4", "name": "Kund: Gröna Gårdar Entr. AB", "type": "Customer", "domain": "Exchange", "size": 22},
             {"id": "obs_1", "name": "Signal: Övertid 11h Johan Berg", "type": "Observation", "domain": "Operational", "size": 18},
+            {"id": "obs_tax_1", "name": "Skatteprofil: RUT 50% Karin Lindström", "type": "Observation", "domain": "Trust", "size": 18},
+            {"id": "obs_tax_2", "name": "Skatteprofil: VMB Erik Johansson", "type": "Observation", "domain": "Trust", "size": 18},
             {"id": "diag_1", "name": "Diagnos: Flaskhals i fältinstallation", "type": "Diagnosis", "domain": "Knowledge", "size": 22},
             {"id": "interv_1", "name": "Intervention: Digital inbytesmall", "type": "Intervention", "domain": "Tools", "size": 24},
             {"id": "exp_1", "name": "Experiment: RUT 50% Offertpilot", "type": "Experiment", "domain": "Innovation & Tech", "size": 22},
@@ -666,11 +853,17 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             {"source": "org_1", "target": "team_1", "relation": "HAS"},
             {"source": "org_1", "target": "team_2", "relation": "HAS"},
             {"source": "org_1", "target": "team_3", "relation": "HAS"},
+            {"source": "org_1", "target": "cust_1", "relation": "SERVES"},
+            {"source": "org_1", "target": "cust_2", "relation": "SERVES"},
+            {"source": "org_1", "target": "cust_3", "relation": "SERVES"},
+            {"source": "org_1", "target": "cust_4", "relation": "SERVES"},
             {"source": "team_1", "target": "emp_1", "relation": "INCLUDES"},
             {"source": "team_2", "target": "emp_2", "relation": "INCLUDES"},
             {"source": "team_3", "target": "emp_3", "relation": "INCLUDES"},
             {"source": "emp_1", "target": "role_1", "relation": "ASSIGNED_TO"},
             {"source": "emp_2", "target": "role_2", "relation": "ASSIGNED_TO"},
+            {"source": "cust_2", "target": "obs_tax_1", "relation": "EVALUATED_AS"},
+            {"source": "cust_1", "target": "obs_tax_2", "relation": "EVALUATED_AS"},
             {"source": "team_3", "target": "obs_1", "relation": "GENERATES"},
             {"source": "obs_1", "target": "diag_1", "relation": "GENERATES"},
             {"source": "diag_1", "target": "interv_1", "relation": "LEADS_TO"},
@@ -685,6 +878,7 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             "count": len(nodes),
             "framework": "Universal ERD (15 Entities)",
         }
+
 
     def _generate_graph_data(self, scenario_id: str, scope: str, role: str, focal_id: Optional[str] = None) -> Dict[str, Any]:
         """Generates dynamic nodes and links for the Spatial Canvas based on scope level and optional focal entity."""
