@@ -114,6 +114,12 @@ class RUTRule(TaxCutRule):
         customer_payable = round(total_gross - rut_deduction, 2)
         customer_saving_pct = round((rut_deduction / total_gross) * 100.0, 1)
 
+        is_cable_or_robot = any(w in (tx.description or "").lower() for w in ["kabel", "kabeldragning", "begränsningskabel", "guidekabel", "robotgräsklippare", "automower"])
+        legal_basis = (
+            "Inkomstskattelagen (1999:1229) 67 kap. 13-19 §§ (OBS: Nedläggning av begränsningskabel & robotinstallation är ej RUT-berättigat enligt Skatteverkets ställningstagande dnr 131 347493-15/111; kräver uppdelning mot BAS 3001 med 25% moms)"
+            if is_cable_or_robot else cls.legal_basis
+        )
+
         calc = RUTCalculation(
             total_package_gross=total_gross,
             material_cost_gross=material_gross,
@@ -129,6 +135,12 @@ class RUTRule(TaxCutRule):
         )
 
         if tx.current_tax_rule != TaxRuleType.RUT_DEDUCTION and rut_deduction > 0:
+            expl = (
+                f"Kabelinstallation/robotarbete för privatkund. OBS: Skatteverket medger ej RUT för nedläggning av begränsningskabel. "
+                f"För full skatteefterlevnad måste kabelarbetet faktureras med 25% moms (BAS 3001), medan eventuellt rent trädgårdsarbete medges 50% RUT."
+                if is_cable_or_robot else
+                f"Installation för privatkund. Kunden sparar {rut_deduction:.0f} SEK (50% av arbetet), företaget behåller 100% intäkt."
+            )
             opp = TaxOptimizationOpportunity(
                 opportunity_id=f"rut_opp_{tx.transaction_id}",
                 transaction_id=tx.transaction_id,
@@ -138,10 +150,10 @@ class RUTRule(TaxCutRule):
                 best_possible_tax_sek=round(total_gross - (total_gross / 1.25), 2),
                 net_tax_saved_sek=0.0,
                 net_profit_delta_sek=rut_deduction,
-                legal_basis=cls.legal_basis,
+                legal_basis=legal_basis,
                 recommended_bas_account=cls.recommended_account,
                 moms_box_change="Fält 05 & 10 (Full moms, 50% arbetskostnad rekvireras från Skatteverket)",
-                explanation=f"Installation för privatkund. Kunden sparar {rut_deduction:.0f} SEK (50% av arbetet), företaget behåller 100% intäkt.",
+                explanation=expl,
             )
             return opp, calc
         return None

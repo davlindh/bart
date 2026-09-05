@@ -68,6 +68,12 @@ class ContextPacket(BaseModel):
     related_entities: List[Dict[str, Any]] = Field(default_factory=list)
     observations: List[Observation] = Field(default_factory=list)
     recommended_next_nodes: List[Dict[str, Any]] = Field(default_factory=list)
+    evidence: List[str] = Field(default_factory=list)
+    assumptions: List[str] = Field(default_factory=list)
+    uncertainties: List[str] = Field(default_factory=list)
+    relevance_scores: Dict[str, float] = Field(default_factory=dict)
+    stop_condition_met: bool = False
+    stop_condition_reason: str = "Tillsräcklig evidens finns för aktuellt scope"
 
 
 class AgentResult(BaseModel):

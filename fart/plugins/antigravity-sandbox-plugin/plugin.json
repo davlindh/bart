@@ -43,7 +43,8 @@
     "skills/worker-orchestration",
     "skills/snapshot-management",
     "skills/local-inference",
-    "skills/disk-persistence"
+    "skills/disk-persistence",
+    "skills/contextual-precognition"
   ],
   "rules": [
     "rules/AGENTS.md"

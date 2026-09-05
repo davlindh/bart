@@ -38,13 +38,14 @@
           <label for="scenarioSelect">Scenario:</label>
           <select id="scenarioSelect" class="hud-select">
             <option value="mixed_q3">Trädgård & Maskinservice AB (Q3 Revision)</option>
+            <option value="maskinochfritid_prod">🚜 Maskin & Fritid '25 (Fortnox Prod)</option>
             <option value="vmb_fleet">Begagnatflotta Inbyten (VMB)</option>
           </select>
         </div>
 
         <!-- Role Selector -->
         <div class="control-item">
-          <label for="roleSelect">Aktiv Roll:</label>
+          <label for="roleSelect">Aktiv Roll: <kbd class="header-kbd" title="Växla roll med tangent R">R</kbd></label>
           <select id="roleSelect" class="hud-select">
             <option value="CFO">CFO (Finansiell Strategi)</option>
             <option value="Ekonomiansvarig">Ekonomiansvarig (Bokföring & Moms)</option>
@@ -55,20 +56,22 @@
         </div>
 
         <!-- Perspective Window Indicator -->
-        <div class="perspective-pill" id="perspectiveBadge">
+        <div class="perspective-pill" id="perspectiveBadge" title="Växla fönster med siffrorna 1–9">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
             <polyline points="2 17 12 22 22 17"></polyline>
             <polyline points="2 12 12 17 22 12"></polyline>
           </svg>
           <span id="perspectiveWindowName">W5: Financial Management</span>
+          <kbd class="header-kbd">1–9</kbd>
         </div>
 
         <!-- Scope Horizon Slider (D0 -> D3) -->
-        <div class="scope-control-group">
+        <div class="scope-control-group" title="Cykla scope med tangent D">
           <div class="scope-labels">
-            <span>Scope Horizon:</span>
+            <span>Scope:</span>
             <span class="scope-active-val" id="scopeValueLabel">D1 (Direct)</span>
+            <kbd class="header-kbd">D</kbd>
           </div>
           <div class="scope-slider-wrapper">
             <input type="range" id="scopeSlider" min="0" max="3" step="1" value="1" class="scope-slider">
@@ -82,17 +85,38 @@
         </div>
         <!-- Multi-Agent & Fortnox Actions -->
         <div class="control-item header-actions-group">
-          <button id="btnRun12AgentLoop" class="btn-hud-action" title="Kör samtliga 12 agenter i sluten självförbättrande loop">
+          <button id="btnTrajectory" class="btn-hud-action emerald" title="Realtidstrajektoria & Pre-Kognitiv Framtidsvy (Genväg: T)">
+            🎯 Trajektoria <kbd class="header-kbd">T</kbd>
+          </button>
+          <button id="btnCheckpoints" class="btn-hud-action amber" title="Självbevarande Checkpoints & SQLite WAL Återställning (Genväg: C)">
+            💾 Checkpoints <kbd class="header-kbd">C</kbd>
+          </button>
+          <button id="btnRun12AgentLoop" class="btn-hud-action" title="Kör samtliga 12 agenter i sluten självförbättrande loop (Ctrl+Enter)">
             ⚡ 12-Agent Loop
           </button>
           <button id="btnFortnoxSync" class="btn-hud-action secondary" title="Hämta och beräkna levande Fortnox ERP data">
             📊 Fortnox Live
+          </button>
+          <button id="btnMaskinFritidProd" class="btn-hud-action emerald" title="Läs in och beräkna produktionsdata från maskinochfritid-25 (Fortnox)">
+            🚜 Maskin & Fritid '25
           </button>
           <button id="btnFortnoxCustomers" class="btn-hud-action cyan" title="Visa Fortnox Kundregister & Skatteteletri (/3/customers)">
             👥 Kunder (Fortnox)
           </button>
           <button id="btnToggleERD" class="btn-hud-action purple" title="Visa Universal ERD Graf (15 Entiteter)">
             🌐 ERD Graf
+          </button>
+          <button id="btnOmnipodLayers" class="btn-hud-action cyan" title="Öppna Omnipod 4-Lager Arkitekturinspektör (Diagram 2)">
+            🏛️ 4-Lager
+          </button>
+          <button id="btnTeamDynamicsTelemetry" class="btn-hud-action amber" title="Visa 12 Nyckelmetriker & Meta-Learning Loop (Diagram 4)">
+            📈 Team Dynamics
+          </button>
+          <button id="btnOpenShortcutsModalHeader" class="btn-hud-action ghost" title="Visa alla tangentbordsgenvägar (Genväg: ?)">
+            ⌨️ <kbd class="header-kbd">?</kbd>
+          </button>
+          <button id="btnSoundToggle" class="btn-hud-action ghost" title="Växla ljudeffekter (Web Audio Synthesizer)">
+            🔊 Ljud PÅ
           </button>
         </div>
       </div>
@@ -134,62 +158,124 @@
         </div>
 
         <div class="panel-content">
+          <div class="presentation-tabs-strip">
+            <button class="pres-tab active" data-tab="l1" id="tabPresL1">4.1 Översikt</button>
+            <button class="pres-tab" data-tab="l2" id="tabPresL2">4.2 Evidens</button>
+            <button class="pres-tab" data-tab="l3" id="tabPresL3">4.3 Maskin (JSON)</button>
+            <button class="pres-tab" data-tab="l4" id="tabPresL4">4.4 Navigation</button>
+          </div>
+
           <!-- Dynamic Perspective Content Container (W1-W9) -->
           <div id="perspectiveDynamicContainer" class="perspective-dynamic-container" style="display: none;"></div>
 
           <div id="perspectiveDefaultW5Container">
-            <!-- Active Focal Entity -->
-          <div class="entity-card" id="focalEntityCard">
-            <div class="card-caption">AKTUELL FOKUSPUNKT (TARGET)</div>
-            <div class="entity-name" id="focalEntityTitle">Q3 Transaktionsström</div>
-            <div class="entity-meta" id="focalEntityMeta">4 transaktioner • 115 000 SEK brutto</div>
-          </div>
+            <!-- 4.1 Human Level 1: Översikt -->
+            <div id="presViewL1" class="pres-view-pane active">
+              <div class="entity-card" id="focalEntityCard">
+                <div class="card-caption">AKTUELL FOKUSPUNKT (TARGET)</div>
+                <div class="entity-name" id="focalEntityTitle">Q3 Transaktionsström</div>
+                <div class="entity-meta" id="focalEntityMeta">4 transaktioner • 115 000 SEK brutto</div>
+              </div>
 
-          <!-- Allowed Domains Matrix -->
-          <div class="domains-matrix-group">
-            <div class="card-caption">TILLÅTNA DOMÄNER (BEHÖRIGHETSMATRIS)</div>
-            <div class="domains-grid" id="domainsGrid">
-              <span class="domain-tag active" data-domain="Trust">Trust</span>
-              <span class="domain-tag active" data-domain="Exchange">Exchange</span>
-              <span class="domain-tag active" data-domain="Operational">Operational</span>
-              <span class="domain-tag active" data-domain="Knowledge">Knowledge</span>
-              <span class="domain-tag inactive" data-domain="Tools">Tools</span>
-              <span class="domain-tag inactive" data-domain="Interactional Interface">Interactional</span>
-            </div>
-          </div>
+              <!-- Allowed Domains Matrix -->
+              <div class="domains-matrix-group">
+                <div class="card-caption">TILLÅTNA DOMÄNER (BEHÖRIGHETSMATRIS)</div>
+                <div class="domains-grid" id="domainsGrid">
+                  <span class="domain-tag active" data-domain="Trust">Trust</span>
+                  <span class="domain-tag active" data-domain="Exchange">Exchange</span>
+                  <span class="domain-tag active" data-domain="Operational">Operational</span>
+                  <span class="domain-tag active" data-domain="Knowledge">Knowledge</span>
+                  <span class="domain-tag inactive" data-domain="Tools">Tools</span>
+                  <span class="domain-tag inactive" data-domain="Interactional Interface">Interactional</span>
+                </div>
+              </div>
 
-          <!-- Active Observations -->
-          <div class="observations-group">
-            <div class="card-caption">AKTIVA TELEMETRIOBSERVATIONER (<span id="obsCount">4</span>)</div>
-            <div class="obs-list" id="obsList">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
+              <!-- Active Observations -->
+              <div class="observations-group">
+                <div class="card-caption">AKTIVA TELEMETRIOBSERVATIONER (<span id="obsCount">4</span>)</div>
+                <div class="obs-list" id="obsList">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
 
-          <!-- Momsdeklaration Draft Mini-Widget -->
-          <div class="moms-preview-card">
-            <div class="card-caption">SKATTEVERKET MOMSDEKLARATION (UTKAST)</div>
-            <div class="moms-row">
-              <span>Fält 05 (25% moms):</span>
-              <strong id="momsFalt05">20 000 SEK</strong>
+              <!-- Momsdeklaration Draft Mini-Widget -->
+              <div class="moms-preview-card">
+                <div class="card-caption">SKATTEVERKET MOMSDEKLARATION (UTKAST)</div>
+                <div class="moms-row">
+                  <span>Fält 05 (25% moms):</span>
+                  <strong id="momsFalt05">20 000 SEK</strong>
+                </div>
+                <div class="moms-row highlight">
+                  <span>Fält 08 (VMB Beskattningsunderlag):</span>
+                  <strong id="momsFalt08">4 000 SEK</strong>
+                </div>
+                <div class="moms-row">
+                  <span>Fält 10 (Utgående moms):</span>
+                  <strong id="momsFalt10">6 000 SEK</strong>
+                </div>
+                <div class="moms-row">
+                  <span>Fält 41 (Omvänd byggmoms):</span>
+                  <strong id="momsFalt41">10 000 SEK</strong>
+                </div>
+                <div class="moms-row total">
+                  <span>Moms att betala:</span>
+                  <strong id="momsFalt49" class="moms-net">3 500 SEK</strong>
+                </div>
+              </div>
             </div>
-            <div class="moms-row highlight">
-              <span>Fält 08 (VMB Beskattningsunderlag):</span>
-              <strong id="momsFalt08">4 000 SEK</strong>
+
+            <!-- 4.2 Human Level 2: Detalj & Evidens -->
+            <div id="presViewL2" class="pres-view-pane" style="display: none;">
+              <div class="pres-sub-panel">
+                <div class="card-caption">EVIDENSKEDJA (STATUTORY & EMPIRICAL)</div>
+                <ul class="evidence-list" id="evidenceChainList">
+                  <li>Laddar evidenskedja...</li>
+                </ul>
+              </div>
+              <div class="pres-sub-panel">
+                <div class="card-caption">JURIDISKA ANTAGANDEN & REGELGRUND</div>
+                <ul class="evidence-list" id="legalAssumptionsList">
+                  <li>Laddar antaganden...</li>
+                </ul>
+              </div>
+              <div class="pres-sub-panel">
+                <div class="card-caption">HANTERADE OSÄKERHETER & STOPPVILLKOR</div>
+                <ul class="evidence-list" id="managedUncertaintiesList">
+                  <li>Laddar osäkerheter...</li>
+                </ul>
+              </div>
+              <!-- 3.3 Vikta: 8-Dimension Context Weighting Vector & Entropy Gauge -->
+              <div class="pres-sub-panel" id="weightingVectorPanel">
+                <div class="card-caption" style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>3.3 VIKTA (8-DIMENSION CONTEXT WEIGHTING)</span>
+                  <span id="confidenceEntropyBadge" class="badge-confidence">Konfidens: 94.2% • Entropi: 0.18</span>
+                </div>
+                <div class="weighting-meters-grid" id="weightingMetersContainer">
+                  <!-- Dynamically populated 8-dimension animated progress meters -->
+                </div>
+              </div>
             </div>
-            <div class="moms-row">
-              <span>Fält 10 (Utgående moms):</span>
-              <strong id="momsFalt10">6 000 SEK</strong>
+
+            <!-- 4.3 Maskin Level 3: Strukturerad JSON Context Packet -->
+            <div id="presViewL3" class="pres-view-pane" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span class="card-caption">CONTEXT PACKET JSON (MASKINLÄSBART)</span>
+                <button class="btn ghost-sm" id="btnCopyContextJson">📋 Kopiera JSON</button>
+              </div>
+              <pre class="json-code-box"><code id="machineJsonBlock">{ "status": "laddar context packet..." }</code></pre>
             </div>
-            <div class="moms-row">
-              <span>Fält 41 (Omvänd byggmoms):</span>
-              <strong id="momsFalt41">10 000 SEK</strong>
+
+            <!-- 4.4 Navigation Level 4: Nästa Punkter -->
+            <div id="presViewL4" class="pres-view-pane" style="display: none;">
+              <div class="card-caption">REKOMMENDERADE NÄSTA NODER (RELEVANS-RANKNING)</div>
+              <div class="nav-nodes-list" id="navNextNodesList">
+                <!-- Dynamically populated navigation cards -->
+              </div>
+              <div style="margin-top: 12px; padding: 8px; background: rgba(6, 182, 212, 0.1); border-radius: 6px; font-size: 0.75rem; color: var(--accent-cyan);">
+                💡 Klicka på valfri nod ovan för att pivotera kontextlinsen och omcentrera Spatial Canvas direkt.
+              </div>
             </div>
-            <div class="moms-row total">
-              <span>Moms att betala:</span>
-              <strong id="momsFalt49" class="moms-net">3 500 SEK</strong>
-            </div>
-          </div>
+
           </div> <!-- Close perspectiveDefaultW5Container -->
         </div>
       </section>
@@ -222,42 +308,52 @@
         </div>
 
         <div class="panel-content">
-          <!-- 6-Stage Timeline Stepper -->
+          <!-- 6-Stage Timeline Stepper: Canonical Exploration & Learning Loop (Diagram 1: 5.1 -> 5.6) -->
           <div class="stepper-timeline" id="stepperTimeline">
             <div class="step-node active" data-step="1" id="stepNode1">
-              <div class="step-bubble">1</div>
-              <span class="step-label">Observe</span>
+              <div class="step-bubble">5.1</div>
+              <span class="step-label">Observera</span>
             </div>
             <div class="step-line" id="stepLine1"></div>
 
             <div class="step-node" data-step="2" id="stepNode2">
-              <div class="step-bubble">2</div>
-              <span class="step-label">Analyze</span>
+              <div class="step-bubble">5.2</div>
+              <span class="step-label">Diagnostisera</span>
             </div>
             <div class="step-line" id="stepLine2"></div>
 
             <div class="step-node" data-step="3" id="stepNode3">
-              <div class="step-bubble">3</div>
-              <span class="step-label">Identify</span>
+              <div class="step-bubble">5.3</div>
+              <span class="step-label">Architect</span>
             </div>
             <div class="step-line" id="stepLine3"></div>
 
             <div class="step-node" data-step="4" id="stepNode4">
-              <div class="step-bubble">4</div>
-              <span class="step-label">Propose</span>
+              <div class="step-bubble">5.4</div>
+              <span class="step-label">Transition</span>
             </div>
             <div class="step-line" id="stepLine4"></div>
 
             <div class="step-node" data-step="5" id="stepNode5">
-              <div class="step-bubble">5</div>
-              <span class="step-label">Act</span>
+              <div class="step-bubble">5.5</div>
+              <span class="step-label">Mät/Utvärdera</span>
             </div>
             <div class="step-line" id="stepLine5"></div>
 
             <div class="step-node" data-step="6" id="stepNode6">
-              <div class="step-bubble">6</div>
-              <span class="step-label">Evaluate</span>
+              <div class="step-bubble">5.6</div>
+              <span class="step-label">Lär</span>
             </div>
+          </div>
+
+          <!-- Progressive Scope Expansion & Stop Condition Banner (Diagram 1: 5) -->
+          <div class="exploration-loop-banner" id="explorationLoopBanner">
+            <div class="loop-decision-indicator">
+              <span class="loop-icon">🔄</span>
+              <span class="loop-text">Behövs mer kontext?</span>
+              <span class="loop-badge stop-ok" id="loopStopBadge">NEJ: Stoppvillkor uppfyllt (Avsluta)</span>
+            </div>
+            <button class="btn ghost-sm" id="btnExpandScopeProgressive" title="Utöka scope från D0 till D3">➕ Utöka Scope (D0 → D3)</button>
           </div>
 
           <!-- Stepper Action Buttons -->
@@ -268,12 +364,26 @@
               </svg>
               Kör Full Agentloop
             </button>
+            <button id="btnAutoPlayLoop" class="btn secondary cyan" title="Autonom cykel med live transformationer">
+              ▶ Auto-Play
+            </button>
             <button id="btnStepNext" class="btn secondary">
               Stega Framåt &gt;
             </button>
             <button id="btnResetStepper" class="btn ghost">
               Återställ
             </button>
+          </div>
+
+          <!-- Loop Progress Scrubber Bar -->
+          <div class="loop-progress-container" id="loopProgressContainer">
+            <div class="loop-progress-track">
+              <div class="loop-progress-fill" id="loopProgressBar" style="width: 16%;"></div>
+            </div>
+            <div class="loop-progress-meta">
+              <span id="loopProgressStage">Steg 1 / 6: 5.1 Observera</span>
+              <span id="loopProgressTime">Takt: 2.2s / fas</span>
+            </div>
           </div>
 
           <!-- Active Step Telemetry Details -->
@@ -351,6 +461,34 @@
             </div>
           </div>
         </div>
+
+        <!-- Friction Gate Overlay (Pre-Cognition HITL Block) -->
+        <div id="frictionGateOverlay" class="friction-gate-overlay" style="display: none;">
+          <div class="friction-gate-card">
+            <div class="friction-gate-header">
+              <span class="friction-gate-icon">⚠️</span>
+              <h3>Pre-Kognitiv Friktionsvarning</h3>
+              <span class="friction-gate-severity-badge" id="frictionGateSeverity">HIGH</span>
+            </div>
+            <div class="friction-gate-issue" id="frictionGateIssue">
+              Identifierad friktion kräver mänsklig bekräftelse innan agenten fortsätter.
+            </div>
+            <div class="friction-gate-root" id="frictionGateRoot">
+              <strong>Rotorsak:</strong> <span id="frictionGateRootText">—</span>
+            </div>
+            <div class="friction-gate-action" id="frictionGateAction">
+              <strong>Rekommenderad Åtgärd:</strong> <span id="frictionGateActionText">—</span>
+            </div>
+            <div class="friction-gate-buttons">
+              <button id="btnFrictionConfirm" class="btn friction-btn-confirm">
+                🛡️ Bekräfta &amp; Fortsätt
+              </button>
+              <button id="btnFrictionPause" class="btn friction-btn-pause">
+                ⏸️ Pausa Agent
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ZONE 3: Interactive Spatial Canvas & Horizon Scouting -->
@@ -361,6 +499,15 @@
             <h2>ZON 3: SPATIAL KUNSKAPSGRAF</h2>
           </div>
           <div class="canvas-controls">
+            <button id="btnToggleLayoutMode" class="btn-canvas-util" title="Växla mellan Koncentrisk Orbit (D0-D3) och Kraftstyrd graf">
+              🪐 Orbit-Vy
+            </button>
+            <button id="btnTraceCausalPath" class="btn-canvas-util emerald" title="Spåra orsakskedja från fokusnod till vald nod">
+              ⚡ Kausal Spårare
+            </button>
+            <button id="btnFreezePhysics" class="btn-canvas-util" title="Frys/Släpp nodernas fysiska simulering">
+              ❄️ Frys Graf
+            </button>
             <button id="btnResetCanvas" class="btn-icon" title="Återställ grafvy">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
@@ -373,10 +520,65 @@
           </div>
         </div>
 
+        <!-- Canvas Search & Domain Filter Toolbar -->
+        <div class="canvas-search-strip">
+          <div class="canvas-search-box">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="canvasSearchInput" class="canvas-search-input" placeholder="Sök nod, konto eller regel (t.ex. 3051, Automower, Bolagsverket)..." />
+          </div>
+          <div class="canvas-domain-pills" id="canvasDomainPills">
+            <button class="domain-filter-pill active" data-domain="ALL">Alla Domäner</button>
+            <button class="domain-filter-pill" data-domain="Operational">Operational</button>
+            <button class="domain-filter-pill" data-domain="Exchange">Exchange</button>
+            <button class="domain-filter-pill" data-domain="Trust">Trust</button>
+            <button class="domain-filter-pill" data-domain="Knowledge">Knowledge</button>
+            <button class="domain-filter-pill" data-domain="Tools">Tools</button>
+          </div>
+        </div>
+
+        <!-- Universal ERD Category Chip Bar -->
+        <div class="canvas-category-strip">
+          <span class="category-label">ERD Kategori:</span>
+          <div class="canvas-category-pills" id="erdCategoryPills">
+            <button class="category-pill active" data-category="ALL">Alla</button>
+            <button class="category-pill" data-category="PEOPLE">👥 People & Roller</button>
+            <button class="category-pill" data-category="PLANS">📋 Plans & Actions</button>
+            <button class="category-pill" data-category="LEARNING">🧠 Learning & Optimering</button>
+            <button class="category-pill" data-category="FINANCE">💰 Finance & Fortnox</button>
+          </div>
+        </div>
+
         <div class="panel-content canvas-panel-content">
-          <!-- Canvas Element -->
+          <!-- Canvas Element with Slide-out Node Inspector -->
           <div class="canvas-wrapper">
             <canvas id="spatialCanvas"></canvas>
+
+            <!-- Slide-out Node Inspector Drawer -->
+            <div class="node-inspector-drawer" id="nodeInspectorDrawer" style="display: none;">
+              <div class="inspector-header">
+                <div class="inspector-title-group">
+                  <span class="inspector-domain-dot" id="inspDomainDot"></span>
+                  <div>
+                    <h4 id="inspNodeName">Nod-inspektör</h4>
+                    <span class="insp-node-id" id="inspNodeId">ID: TX-1001</span>
+                  </div>
+                </div>
+                <button class="btn-icon" id="btnCloseInspector" title="Stäng inspektör">✕</button>
+              </div>
+
+              <div class="inspector-body" id="inspectorBody">
+                <!-- Dynamically populated node metrics & attributes -->
+              </div>
+
+              <div class="inspector-footer">
+                <button class="btn primary" id="btnInspPivotContext">🚀 Sätt Fokus & Pivotera</button>
+                <button class="btn secondary" id="btnInspCopyId">📋 Kopiera ID</button>
+              </div>
+            </div>
+
             <div class="canvas-legend">
               <span class="legend-item"><span class="legend-dot dot-op"></span> Operational</span>
               <span class="legend-item"><span class="legend-dot dot-ex"></span> Exchange</span>
@@ -407,30 +609,74 @@
     <!-- ZONE 4: Balanced Journal Voucher Ledger (Bottom Drawer) -->
     <footer class="hud-footer zone-voucher-drawer" id="zoneVoucherDrawer">
       <div class="drawer-header">
-        <div class="drawer-title">
-          <span class="panel-dot amber"></span>
-          <h3>ZON 4: BALANSERADE BAS-VERIFIKAT (DEBET == KREDIT)</h3>
+        <div class="drawer-title-group">
+          <div class="drawer-title">
+            <span class="panel-dot amber"></span>
+            <h3>ZON 4: FORTNOX VERIFIKATIONSHANTERING & HUVUDBOK</h3>
+          </div>
+          <!-- Dual-view tab strip -->
+          <div class="voucher-tabs-strip">
+            <button class="voucher-tab active" id="tabProposedVouchers" title="Visa alla klara verifikationsförslag redo att postas till Fortnox">
+              📋 Föreslagna Verifikationsutkast (Klart för Fortnox)
+              <span class="tab-badge amber" id="badgeProposedCount">4</span>
+            </button>
+            <button class="voucher-tab" id="tabBookedVouchers" title="Visa redan bokförda och synkade verifikat i Fortnox">
+              🏛️ Bokförda &amp; Synkade i Fortnox
+              <span class="tab-badge emerald" id="badgeBookedCount">0</span>
+            </button>
+          </div>
         </div>
-        <div class="drawer-meta">
-          <span id="voucherCount">1 bokfört verifikat</span>
+
+        <div class="drawer-right-actions">
+          <button id="btnSyncAllProposalsToFortnox" class="btn-voucher-action emerald" title="Skicka och bokför samtliga klara förslag direkt till Fortnox API">
+            ⚡ Skicka alla förslag till Fortnox API
+          </button>
+          <button id="btnExportSIE4" class="btn-voucher-action" title="Ladda ner SIE-4 bokföringsfil för import till Fortnox/Visma">
+            📥 Exportera SIE-4 (.se)
+          </button>
+          <button id="btnExportMomsdeklaration" class="btn-voucher-action cyan" title="Ladda ner Skatteverkets momsdeklarationsunderlag">
+            📄 Momsunderlag
+          </button>
         </div>
       </div>
-      <div class="voucher-table-wrapper">
-        <table class="voucher-table" id="voucherTable">
-          <thead>
-            <tr>
-              <th>Verifikat-ID</th>
-              <th>Konto & Beskrivning</th>
-              <th>Debet (SEK)</th>
-              <th>Kredit (SEK)</th>
-              <th>Balanskontroll</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="voucherTableBody">
-            <!-- Dynamically populated with balanced rows -->
-          </tbody>
-        </table>
+
+      <!-- Real-Time Fortnox ERP Event Stream Ticker -->
+      <div class="erp-ticker-container" id="erpTickerContainer">
+        <div class="ticker-badge">
+          <span class="ticker-dot"></span>
+          <span>FORTNOX EVENT STREAM</span>
+        </div>
+        <div class="ticker-scroll-content" id="erpLiveTicker">
+          <span class="ticker-item"><span class="ticker-time">10:42:01</span> ⚡ [VMB-INBYTE] Begagnad Husqvarna Automower registrerad i Fortnox Lager • Beräknar 20% vinstmarginalmoms</span>
+        </div>
+      </div>
+
+      <!-- View 1: Proposed Vouchers Queue (Ready for Fortnox) -->
+      <div class="voucher-view-pane active" id="viewProposedVouchers">
+        <div class="proposals-queue-container" id="proposedVouchersList">
+          <!-- Dynamically populated proposal cards with Debet/Kredit and statutory references -->
+        </div>
+      </div>
+
+      <!-- View 2: Booked & Synchronized Vouchers Table -->
+      <div class="voucher-view-pane" id="viewBookedVouchers" style="display: none;">
+        <div class="voucher-table-wrapper">
+          <table class="voucher-table" id="voucherTable">
+            <thead>
+              <tr>
+                <th>Verifikat-ID</th>
+                <th>Konto &amp; Beskrivning</th>
+                <th>Debet (SEK)</th>
+                <th>Kredit (SEK)</th>
+                <th>Balanskontroll</th>
+                <th>Fortnox Status</th>
+              </tr>
+            </thead>
+            <tbody id="voucherTableBody">
+              <!-- Dynamically populated with balanced rows -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </footer>
 
@@ -486,6 +732,535 @@
       <!-- Customer Cards Grid -->
       <div class="customer-cards-grid" id="customerCardsGrid">
         <!-- Dynamically rendered customer cards -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-Time Pre-Cognitive Trajectory Modal -->
+  <div class="trajectory-modal-overlay" id="trajectoryModalOverlay" style="display: none;">
+    <div class="trajectory-modal">
+      <div class="trajectory-modal-header">
+        <div class="modal-title-group">
+          <span class="panel-dot emerald pulse-glow"></span>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3>REALTIDSTRAJEKTORIA & INTENTIONAL PRE-KOGNITION</h3>
+              <span class="badge-confidence" id="trajConfidenceBadge">92% CONFIDENCE</span>
+            </div>
+            <span class="modal-subtitle">Dynamisk 3-stegs framtidsprojektion, färdighetsdispatch och preventiv avvikelseavskärmning</span>
+          </div>
+        </div>
+        <button id="btnCloseTrajectoryModal" class="btn-icon" title="Stäng trajektoriavy">✕</button>
+      </div>
+
+      <!-- Project Intent Mandate Strip -->
+      <div class="intent-mandate-card">
+        <div class="intent-header">
+          <span class="intent-label">PROJEKTINTENT & MÅLSTYRNING</span>
+          <span class="intent-status" id="intentStatusTag">ACTIVE</span>
+        </div>
+        <div class="intent-text" id="intentMandateText">
+          Optimera VMB-marginaler, avlasta fältövertid och säkra projekttillstånd i sandlåda före bokslut
+        </div>
+        <div class="intent-kpi-row" id="intentKpisRow">
+          <span class="kpi-chip">🎯 Vinstökning: <strong>+14.2%</strong></span>
+          <span class="kpi-chip">⏱️ Max Övertid: <strong>5h</strong></span>
+          <span class="kpi-chip">❤️ Team Health: <strong>≥75.0</strong></span>
+        </div>
+      </div>
+
+      <!-- Predicted Cognitive Trajectory Steps -->
+      <div class="traj-section">
+        <div class="traj-section-title">
+          <span>PROJICERAD KOGNITIV TRAJEKTORIA (HORISONT 3 STEG)</span>
+          <span class="sub-hint">Klicka på ett steg för att pivotera kontextlinsen och Spatial Canvas</span>
+        </div>
+        <div class="traj-steps-track" id="trajStepsTrack">
+          <!-- Dynamically populated step cards -->
+        </div>
+      </div>
+
+      <!-- Proactive Skills & Friction Split -->
+      <div class="traj-dual-grid">
+        <!-- Proactive Skills -->
+        <div class="traj-sub-panel">
+          <div class="traj-sub-header">
+            <span class="panel-dot cyan"></span>
+            <h4>PROAKTIVT DISPATCHADE FÄRDIGHETER (SKILLS)</h4>
+          </div>
+          <div class="skills-chips-list" id="trajSkillsList">
+            <!-- Dynamically populated skill chips -->
+          </div>
+        </div>
+
+        <!-- Pre-emptive Friction Shielding -->
+        <div class="traj-sub-panel">
+          <div class="traj-sub-header">
+            <span class="panel-dot rose"></span>
+            <h4>PRE-EMPTIV FRIKTIONSAVSKÄRMNING</h4>
+          </div>
+          <div class="frictions-list" id="trajFrictionsList">
+            <!-- Dynamically populated friction alerts -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Trajectory Actions Footer -->
+      <div class="trajectory-modal-footer">
+        <button id="btnQuickCheckpointFromTraj" class="btn primary">
+          💾 Spara Tillstånd (SQLite WAL Checkpoint)
+        </button>
+        <button id="btnRunOrchestratorWithTraj" class="btn secondary">
+          ⚡ Kör Pre-Kognitiv Orkestrator
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkpoints & Self-Preservation Modal -->
+  <div class="checkpoints-modal-overlay" id="checkpointsModalOverlay" style="display: none;">
+    <div class="checkpoints-modal">
+      <div class="customer-modal-header">
+        <div class="modal-title-group">
+          <span class="panel-dot amber"></span>
+          <div>
+            <h3>SJÄLVBEVARANDE & CHECKPOINT-HANTERARE</h3>
+            <span class="modal-subtitle">Datalagring i SQLite WAL med SHA-256 integritetsverifiering och nolldatatapps-återställning</span>
+          </div>
+        </div>
+        <button id="btnCloseCheckpointsModal" class="btn-icon" title="Stäng checkpointsvy">✕</button>
+      </div>
+
+      <div class="checkpoints-controls-bar">
+        <button id="btnCreateNewCheckpoint" class="btn action-approve">
+          + Skapa Ny Checkpoint Nu
+        </button>
+        <button id="btnCompareCheckpoints" class="btn btn-secondary-diff" style="display: none;">
+          ⚖️ Jämför Valda (2)
+        </button>
+        <span class="chk-info-text">Durable storage: <code>.antigravity/storage/projects/project_persistence.db</code></span>
+      </div>
+
+      <!-- Checkpoint State Diff Panel -->
+      <div id="checkpointDiffPanel" class="checkpoint-diff-panel" style="display: none;">
+        <div class="diff-panel-header">
+          <h4>⚖️ Checkpoint Diff Analys</h4>
+          <button id="btnCloseDiffPanel" class="btn-icon-sm" title="Stäng diff-vy">✕</button>
+        </div>
+        <div id="diffPanelContent" class="diff-panel-content"></div>
+      </div>
+
+      <div class="checkpoints-list" id="checkpointsListContainer">
+        <!-- Dynamically rendered checkpoint items -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Ambient Floating HUD Keyboard Shortcut Dock -->
+  <aside class="hud-shortcut-dock" id="hudShortcutDock" aria-label="Tangentbordsgenvägar snabbdocka">
+    <div class="dock-header-hint">
+      <span class="dock-pulse-led"></span>
+      <span class="dock-title">GENVÄGAR</span>
+    </div>
+    <div class="dock-keys-row">
+      <button class="dock-key-btn" data-key="t" id="dockBtnT" title="Tryck T för att öppna kognitiv trajektoria">
+        <kbd>T</kbd>
+        <span>Trajektoria</span>
+      </button>
+      <button class="dock-key-btn" data-key="c" id="dockBtnC" title="Tryck C för att öppna checkpoints">
+        <kbd>C</kbd>
+        <span>Checkpoints</span>
+      </button>
+      <button class="dock-key-btn" data-key="1-9" id="dockBtnNums" title="Tryck 1–9 för att byta perspektivfönster W1–W9">
+        <kbd>1–9</kbd>
+        <span>Fönster W1–W9</span>
+      </button>
+      <button class="dock-key-btn" data-key="d" id="dockBtnD" title="Tryck D för att cykla scope-horisont">
+        <kbd>D</kbd>
+        <span>Scope D0–D3</span>
+      </button>
+      <button class="dock-key-btn" data-key="r" id="dockBtnR" title="Tryck R för att byta aktiv roll">
+        <kbd>R</kbd>
+        <span>Byt Roll</span>
+      </button>
+      <button class="dock-key-btn" data-key="arrowright" id="dockBtnArrows" title="Tryck piltangenter för att stega agenten">
+        <kbd>← / →</kbd>
+        <span>Stega Agent</span>
+      </button>
+      <button class="dock-key-btn" data-key="escape" id="dockBtnEsc" title="Tryck Escape för att stänga modal eller återställa">
+        <kbd>Esc</kbd>
+        <span>Stäng</span>
+      </button>
+      <button class="dock-key-btn highlight" id="dockBtnHelp" title="Öppna fullständig genvägsöversikt (?)">
+        <kbd>?</kbd>
+        <span>Alla Genvägar</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Full Keyboard Shortcuts Cheat Sheet Modal -->
+  <div class="shortcuts-modal-overlay" id="shortcutsModalOverlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="shortcutsModalTitle">
+    <div class="shortcuts-modal">
+      <div class="customer-modal-header">
+        <div class="modal-title-group">
+          <span class="panel-dot cyan"></span>
+          <div>
+            <h3 id="shortcutsModalTitle">TANGENTBORDSGENVÄGAR & POWER-USER HUD</h3>
+            <span class="modal-subtitle">Fullständig kontroll över spatial canvas, pre-kognition och agentloop utan musinteraktion</span>
+          </div>
+        </div>
+        <button id="btnCloseShortcutsModal" class="btn-icon" title="Stäng fönster (Esc)">✕</button>
+      </div>
+
+      <!-- Live Keystroke Visual Feedback Banner -->
+      <div class="shortcuts-live-banner">
+        <div class="live-banner-text">
+          <span class="banner-pulse-dot"></span>
+          <span>INTERAKTIV FEEDBACK: Tryck på valfri tangent för att testa respons i realtid:</span>
+        </div>
+        <div class="live-key-display">
+          <span class="live-key-label">Aktiv Tangent:</span>
+          <kbd class="kbd-live-active" id="liveKeyVisualizer">Väntar på tangent...</kbd>
+        </div>
+      </div>
+
+      <!-- Categorized Shortcut Grid -->
+      <div class="shortcuts-grid">
+        <!-- Col 1: Kognition & Tillstånd -->
+        <div class="shortcut-category-card">
+          <div class="category-header">
+            <span class="panel-dot emerald"></span>
+            <h4>KOGNITION & SJÄLVBEVARANDE</h4>
+          </div>
+          <div class="shortcut-rows-list">
+            <div class="shortcut-row" data-shortcut-key="t">
+              <div class="key-combo"><kbd>T</kbd></div>
+              <div class="key-desc">
+                <strong>Realtidstrajektoria</strong>
+                <span>Projicera 3-stegs framtidsvy med sannolikheter & skills</span>
+              </div>
+            </div>
+            <div class="shortcut-row" data-shortcut-key="c">
+              <div class="key-combo"><kbd>C</kbd></div>
+              <div class="key-desc">
+                <strong>SQLite WAL Checkpoints</strong>
+                <span>Spara eller återställ persistent session med SHA-256</span>
+              </div>
+            </div>
+            <div class="shortcut-row" data-shortcut-key="escape">
+              <div class="key-combo"><kbd>Esc</kbd></div>
+              <div class="key-desc">
+                <strong>Stäng / Återställ</strong>
+                <span>Stänger aktiv modal eller återställer aktiv agentvy</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Col 2: Spatial Canvas & Perspektiv -->
+        <div class="shortcut-category-card">
+          <div class="category-header">
+            <span class="panel-dot amber"></span>
+            <h4>SPATIAL CANVAS & PERSPEKTIV</h4>
+          </div>
+          <div class="shortcut-rows-list">
+            <div class="shortcut-row" data-shortcut-key="1-9">
+              <div class="key-combo"><kbd>1</kbd>–<kbd>9</kbd></div>
+              <div class="key-desc">
+                <strong>Omnipod Perspektiv (W1–W9)</strong>
+                <span>Växla direkt mellan ekonomi, matchning, resurser etc.</span>
+              </div>
+            </div>
+            <div class="shortcut-row" data-shortcut-key="d">
+              <div class="key-combo"><kbd>D</kbd></div>
+              <div class="key-desc">
+                <strong>Cykla Scope-horisont</strong>
+                <span>Rotera mellan D0 (lokal), D1 (direkt), D2, D3 (meta)</span>
+              </div>
+            </div>
+            <div class="shortcut-row">
+              <div class="key-combo"><kbd>2x Klick</kbd></div>
+              <div class="key-desc">
+                <strong>Kontextuell Pivotering</strong>
+                <span>Fokusera och omcentrera grafen runt klickad nod</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Col 3: Agenter & HITL-loop -->
+        <div class="shortcut-category-card">
+          <div class="category-header">
+            <span class="panel-dot purple"></span>
+            <h4>AGENTLOOP & HITL-STYRNING</h4>
+          </div>
+          <div class="shortcut-rows-list">
+            <div class="shortcut-row" data-shortcut-key="r">
+              <div class="key-combo"><kbd>R</kbd></div>
+              <div class="key-desc">
+                <strong>Cykla Användarroll</strong>
+                <span>CFO, Revisor, Ekonomiansvarig, Säljare, Verkstadschef</span>
+              </div>
+            </div>
+            <div class="shortcut-row" data-shortcut-key="arrowright">
+              <div class="key-combo"><kbd>→</kbd> / <kbd>←</kbd></div>
+              <div class="key-desc">
+                <strong>Stega Agenten</strong>
+                <span>Navigera framåt/bakåt genom 6-stegs tidslinjen</span>
+              </div>
+            </div>
+            <div class="shortcut-row" data-shortcut-key="ctrl+enter">
+              <div class="key-combo"><kbd>Ctrl</kbd> + <kbd>↵</kbd></div>
+              <div class="key-desc">
+                <strong>Kör Full Agentloop</strong>
+                <span>Exekverar hela agenten autonomt med validering</span>
+              </div>
+            </div>
+            <div class="shortcut-row" data-shortcut-key="?">
+              <div class="key-combo"><kbd>?</kbd></div>
+              <div class="key-desc">
+                <strong>Denna Genvägsguide</strong>
+                <span>Öppnar och stänger denna hjälpöversikt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shortcuts-modal-footer">
+        <span class="footer-hint">Tips: Du kan även klicka direkt på knapparna i snabbdockan längst ner i fönstret!</span>
+        <button class="btn secondary" id="btnCloseShortcutsFooter">Stäng (Esc)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Maskin & Fritid '25 Production Intelligence Modal -->
+  <div class="customer-modal-overlay" id="maskinFritidModalOverlay" style="display: none;">
+    <div class="customer-modal-container" style="max-width: 980px;">
+      <div class="customer-modal-header">
+        <div class="modal-title-group">
+          <span class="panel-dot emerald pulse-glow"></span>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3>MASKIN & FRITID '25 • PRODUKTIONSVERIFIERING</h3>
+              <span class="badge-confidence" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981;">FORTNOX SYNC ACTIVE</span>
+            </div>
+            <span class="modal-subtitle">Beräkning av produktionsgradiga affärsvektorer, balanserade verifikat och Skatteverkets momsdeklaration</span>
+          </div>
+        </div>
+        <button id="btnCloseMaskinFritidModal" class="btn-icon">✕</button>
+      </div>
+
+      <!-- KPI Summary Strip -->
+      <div class="customer-kpis-strip">
+        <div class="cust-kpi-card">
+          <div class="kpi-label">OFFERTVOLYM BRUTTO</div>
+          <div class="kpi-val" id="mfKpiGross">107 450 SEK</div>
+        </div>
+        <div class="cust-kpi-card highlight">
+          <div class="kpi-label">RUT & VMB SUBVENTION</div>
+          <div class="kpi-val savings" id="mfKpiSavings">+18 800 SEK</div>
+        </div>
+        <div class="cust-kpi-card">
+          <div class="kpi-label">FÖRVÄNTAT TB1 (MARGINAL)</div>
+          <div class="kpi-val" id="mfKpiProfit">+35 560 SEK (33%)</div>
+        </div>
+        <div class="cust-kpi-card">
+          <div class="kpi-label">DUBBELBOKFÖRING</div>
+          <div class="kpi-val" style="color: #10b981;" id="mfKpiVouchers">5 Verifikat (0 öre diff)</div>
+        </div>
+      </div>
+
+      <!-- Two-column: Vouchers & Skatteverket -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+        <!-- Column 1: Balanserade Verifikat -->
+        <div class="traj-sub-panel" style="padding: 16px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--color-border); border-radius: 8px;">
+          <div class="traj-sub-header" style="margin-bottom: 12px;">
+            <span class="panel-dot emerald"></span>
+            <h4>BALANSERADE VERIFIKAT (SERIE A)</h4>
+          </div>
+          <div id="mfVouchersList" style="display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto;">
+            <!-- Dynamically populated vouchers -->
+          </div>
+        </div>
+
+        <!-- Column 2: Skatteverkets Momsdeklaration & BAS-konton -->
+        <div class="traj-sub-panel" style="padding: 16px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--color-border); border-radius: 8px;">
+          <div class="traj-sub-header" style="margin-bottom: 12px;">
+            <span class="panel-dot cyan"></span>
+            <h4>SKATTEVERKETS MOMSDEKLARATION & BAS-KONTON</h4>
+          </div>
+          <div id="mfSkvReportBoxes" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Dynamically populated report boxes -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer action buttons -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--color-border);">
+        <span style="font-size: 11px; color: var(--color-text-muted);">Källa: C:\Users\info\KOD\maskinochfritid-25 • Fortnox API /3/ Deep Hydration</span>
+        <div style="display: flex; gap: 10px;">
+          <button id="btnLoadMfToCanvas" class="btn primary">🌌 Läs in i Spatial Canvas</button>
+          <button id="btnCloseMfModalBottom" class="btn secondary">Stäng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Omnipod Framework 4-Layer Architecture Inspector Modal (Diagram 2) -->
+  <div class="customer-modal-overlay" id="omnipodLayersModalOverlay" style="display: none;">
+    <div class="customer-modal-container" style="max-width: 1040px;">
+      <div class="customer-modal-header">
+        <div class="modal-title-group">
+          <span class="panel-dot cyan pulse-glow"></span>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3>OMNIPOD FRAMEWORK • 4-LAGERS ARKITEKTURINSPEKTÖR</h3>
+              <span class="badge-confidence" style="background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan);">OMNIPOD CORE</span>
+            </div>
+            <span class="modal-subtitle">Helhet, Domäner, Roller och Informationslager (Omnipod Framework_ Lager, Domäner och Flöden.png)</span>
+          </div>
+        </div>
+        <button id="btnCloseOmnipodLayersModal" class="btn-icon">✕</button>
+      </div>
+
+      <!-- Layer Navigation Tabs -->
+      <div class="layer-nav-tabs">
+        <button class="layer-tab active" data-layer="l1" id="tabLayerL1">Lager 1: Perspektiv (W1–W9)</button>
+        <button class="layer-tab" data-layer="l2" id="tabLayerL2">Lager 2: Funktionsdomäner (6)</button>
+        <button class="layer-tab" data-layer="l3" id="tabLayerL3">Lager 3: Samarbetsstruktur</button>
+        <button class="layer-tab" data-layer="l4" id="tabLayerL4">Lager 4: Informationslager</button>
+      </div>
+
+      <!-- L1: Perspektivfönster & Kärnflöde -->
+      <div id="layerPaneL1" class="layer-content-pane active">
+        <div class="core-flow-strip">
+          <div class="card-caption">KÄRNFLÖDE (FEEDBACK & SJÄLVFÖRBÄTTRING)</div>
+          <div class="core-flow-steps">
+            <span>Kontext</span> ➔ <span>Matcha</span> ➔ <span>Planera</span> ➔ <span>Allokera</span> ➔ <span>Genomför</span> ➔ <span>Kommunicera</span> ➔ <span>Utvärdera</span> ➔ <span>Lär & Anpassa</span>
+          </div>
+        </div>
+        <div class="windows-grid-3x3" id="omnipodWindowsGrid">
+          <!-- Dynamically populated 9 perspective cards -->
+        </div>
+      </div>
+
+      <!-- L2: Funktionsdomäner & Avstånd -->
+      <div id="layerPaneL2" class="layer-content-pane" style="display: none;">
+        <div class="domains-overview-grid" id="omnipodDomainsGrid">
+          <!-- Dynamically populated 6 domains -->
+        </div>
+        <div class="distance-relations-card" style="margin-top: 14px;">
+          <div class="card-caption">DOMÄNERNAS INBÖRDES RELATIONER (STÖRSTA AVSTÅND)</div>
+          <div class="distance-grid">
+            <div class="distance-card">
+              <strong>Trust vs. Tools</strong>
+              <span>Säkerhet & identitet vs. Produktivitetsverktyg</span>
+              <em>Största avstånd: Olika kärnsyften och interaktionsnoder</em>
+            </div>
+            <div class="distance-card">
+              <strong>Knowledge vs. Exchange</strong>
+              <span>Lärande & innehåll vs. Ekonomiska transaktioner</span>
+              <em>Största avstånd: Utbildning & kunskap vs. ekonomiska utbyten</em>
+            </div>
+            <div class="distance-card">
+              <strong>Interactional vs. Operational</strong>
+              <span>Användarupplevelse vs. Backend & drift</span>
+              <em>Största avstånd: Användargränssnitt vs. infrastruktur</em>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L3: Samarbetsstruktur (User A-D Matris) -->
+      <div id="layerPaneL3" class="layer-content-pane" style="display: none;">
+        <div class="card-caption">SAMARBETSKARTA: VEM BIDRAR VAR? (ANVÄNDARE & DOMÄNER)</div>
+        <table class="collab-matrix-table" id="collabMatrixTable">
+          <thead>
+            <tr>
+              <th>Användare & Roll</th>
+              <th>🛡️ Trust</th>
+              <th>📚 Knowledge</th>
+              <th>💾 Data</th>
+              <th>⚙️ Operational</th>
+              <th>Rolltolkning i Domänen</th>
+            </tr>
+          </thead>
+          <tbody id="collabMatrixBody">
+            <!-- Dynamically populated from API /api/omnipod/layers -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- L4: Informationslager (Kataloger) -->
+      <div id="layerPaneL4" class="layer-content-pane" style="display: none;">
+        <div class="card-caption">DOMÄN-DIREKTORIER & DOKUMENTSTRUKTUR (SAMARBETSKATALOG)</div>
+        <div class="catalogs-grid" id="catalogsGrid">
+          <!-- Dynamically populated catalogs -->
+        </div>
+        <div class="data-types-card" style="margin-top: 14px;">
+          <div class="card-caption">DATATYPER PER LAGER (L1–L4)</div>
+          <div class="data-types-grid">
+            <div><strong>L1 Perspektiv:</strong> Insikter, rekommendationer, planer, ärenden, KPI:er</div>
+            <div><strong>L2 Domäner:</strong> Fakta, transaktioner, aktiviteter, objekt, relationer</div>
+            <div><strong>L3 Samarbete:</strong> Roller, tillgångar, bidrag, ansvar, behörigheter</div>
+            <div><strong>L4 Information:</strong> Dokument, filer, dataset, loggar, meddelanden</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="customer-modal-footer" style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-end;">
+        <button id="btnCloseOmnipodLayersFooter" class="btn secondary">Stäng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Dynamics Optimizer 12-Metrics & Meta-Loop Modal (Diagram 4) -->
+  <div class="customer-modal-overlay" id="teamDynamicsModalOverlay" style="display: none;">
+    <div class="customer-modal-container" style="max-width: 1040px;">
+      <div class="customer-modal-header">
+        <div class="modal-title-group">
+          <span class="panel-dot amber pulse-glow"></span>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3>TEAM DYNAMICS OPTIMIZER • 12 NYCKELMETRIKER & META-LOOP</h3>
+              <span class="badge-confidence" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border: 1px solid var(--accent-amber);">12-AGENT SYSTEM</span>
+            </div>
+            <span class="modal-subtitle">Datadrivet, adaptivt och kontinuerligt lärande agentsystem för team (Team Dynamics Optimizer_ Adaptivt agentsystem för team.png)</span>
+          </div>
+        </div>
+        <button id="btnCloseTeamDynamicsModal" class="btn-icon">✕</button>
+      </div>
+
+      <!-- 12 Key Metrics Grid -->
+      <div class="card-caption" style="margin-top: 8px;">NYCKELMETRIKER (12 KVANTITATIVA TELEMETRIMÅTT)</div>
+      <div class="team-metrics-grid-12" id="teamMetricsGrid12">
+        <!-- Dynamically populated 12 cards -->
+      </div>
+
+      <!-- Closed Meta-Learning Loop -->
+      <div class="meta-learning-loop-card" style="margin-top: 16px;">
+        <div class="card-caption">SJÄLVFÖRBÄTTRANDE LOOP (META-LOOP)</div>
+        <div class="meta-loop-flow">
+          <div class="meta-node">Systemdata & Loggar</div> ➔
+          <div class="meta-node highlight">Meta-Learning Agent</div> ➔
+          <div class="meta-node">Gap Analysis</div> ➔
+          <div class="meta-node">Förbättra Prompts/Modeller</div> ➔
+          <div class="meta-node">Uppdatera Regler/Heuristik</div> ➔
+          <div class="meta-node">Driftsätt & Övervaka</div> ➔
+          <div class="meta-node emerald">Bättre Agenter & Resultat</div>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 8px; text-align: center;">
+          Loopens syfte: Analyserar hur agenter presterar, upptäcker brister och omkalibrerar beslutsregler med varje genomförd körning.
+        </div>
+      </div>
+
+      <div class="customer-modal-footer" style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 11px; color: var(--text-dim);">Live telemetri härledd från Maskin & Fritid '25 och Universal ERD</span>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnRun12AgentLoopFromModal" class="btn primary">⚡ Kör 12-Agent Sluten Loop Nu</button>
+          <button id="btnCloseTeamDynamicsFooter" class="btn secondary">Stäng</button>
+        </div>
       </div>
     </div>
   </div>

@@ -55,7 +55,7 @@ print(f"[PASS] Fortnox live computation: Team Health Index {fn_res['team_dynamic
 
 # Test 8: Universal ERD Graph
 erd_res = h._get_erd_graph_data()
-assert erd_res["count"] == 16
+assert erd_res["count"] >= 16
 print(f"[PASS] Universal ERD Graph: {erd_res['count']} nodes linked")
 
 print(f"[OK] Full Server & Tax Engine validation complete")

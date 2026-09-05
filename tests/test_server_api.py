@@ -87,3 +87,37 @@ def test_server_windows_and_fortnox_endpoints():
     assert cust_data["total_potential_tax_savings_sek"] > 0
     assert any(c["rut_eligible"] for c in cust_data["customers"])
 
+
+def test_export_endpoints_sie4_and_momsdeklaration():
+    """Verify SIE-4 and Momsdeklaration export generation in server request handler."""
+    handler = BARTRequestHandler.__new__(BARTRequestHandler)
+
+    # Test SIE-4 export text
+    sie_content = handler._generate_sie4_content()
+    assert "#SIETYP 4" in sie_content
+    assert "#FNAMN" in sie_content
+    assert "#VER" in sie_content
+    assert "#TRANS 1930" in sie_content
+    assert "#TRANS 3051" in sie_content
+
+    # Test Momsdeklaration export json
+    moms_data = handler._generate_momsdeklaration_content()
+    assert "falt_49_moms_att_betala_eller_fa_tillbaka" in moms_data
+    assert moms_data["falt_49_moms_att_betala_eller_fa_tillbaka"] == 17600.0
+
+
+def test_maskinochfritid_server_endpoints():
+    """Verify maskinochfritid production computation and voucher handling on server handler."""
+    handler = BARTRequestHandler.__new__(BARTRequestHandler)
+    res = handler._compute_maskinochfritid_production()
+
+    assert res["organization_name"] == "Maskin & Fritid i Skåne AB"
+    assert res["summary"]["invoices_analyzed"] == 5
+    assert res["voucher_telemetry"]["all_balanced"] is True
+    assert res["voucher_telemetry"]["accounting_diff_sek"] == 0.0
+    assert res["erd_graph"]["node_count"] > 15
+    assert res["checkpoint"]["checkpoint_id"].startswith("chk_")
+    assert len(res["checkpoint"]["checksum_sha256"]) == 64
+
+
+

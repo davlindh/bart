@@ -13,6 +13,7 @@ from .models import (
     FortnoxVoucherRow,
 )
 from .computations import FortnoxComputationPipeline
+from .maskinochfritid_adapter import MaskinOchFritidAdapter
 
 __all__ = [
     "FortnoxCustomer",
@@ -26,5 +27,6 @@ __all__ = [
     "FortnoxVoucher",
     "FortnoxVoucherRow",
     "FortnoxComputationPipeline",
+    "MaskinOchFritidAdapter",
 ]
 

@@ -35,6 +35,9 @@ class FortnoxCustomer(BaseModel):
     sni_code: Optional[str] = None  # e.g., '43.120' for construction/groundwork
     property_designation: Optional[str] = None  # Fastighetsbeteckning för ROT/RUT
     active: bool = True
+    registered_machines: List[Dict[str, Any]] = Field(default_factory=list)
+    rut_used_this_year: float = 0.0
+    rut_remaining_quota: float = 75000.0
 
 
 
@@ -104,6 +107,8 @@ class FortnoxVoucherRow(BaseModel):
     description: str
     debet: float = 0.0
     kredit: float = 0.0
+    account_name: Optional[str] = None
+    vat_code: Optional[str] = None
 
 
 class FortnoxVoucher(BaseModel):
@@ -112,3 +117,7 @@ class FortnoxVoucher(BaseModel):
     description: str
     transaction_date: str
     rows: List[FortnoxVoucherRow] = Field(default_factory=list)
+    total_debet: float = 0.0
+    total_kredit: float = 0.0
+    is_balanced: bool = True
+    skatteverket_report_boxes: Dict[str, float] = Field(default_factory=dict)

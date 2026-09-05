@@ -422,3 +422,113 @@ Our `ContextResolutionEngine.resolve()` already performs exactly this filtering.
 Do you want me to proceed with **Phase 1 migrations** (Dual-Path Dispatcher, Entity State Model, Window Decomposition enrichment, and Meta-Attribute extension)?
 
 
+
+
+# Implementation Plan: Self-Preservation & Intentional Contextual Pre-Cognition across Skills and Projects
+
+This plan formalizes and implements **Self-Preservation (Durable Memory & State Continuity)** and **Intentional Contextual Pre-Cognition (Predictive Trajectory & Proactive Skill Dispatch)** across project workspaces and Antigravity skills.
+
+---
+
+## Architecture Overview
+
+```mermaid
+graph TD
+    subgraph S1["Self-Preservation Layer (State Survivability)"]
+        ERD[Universal ERD Graph] --> PB[Persistence Bridge]
+        AGY[Agent State & Memory] --> PB
+        SCH[Worker Schedules & History] --> PB
+        PB --> SQL[(SQLite WAL Engine + Blob Store)]
+    end
+
+    subgraph S2["Intentional Pre-Cognition Engine"]
+        PI[Project Intent & Mandate] --> PE[PreCognition Engine]
+        CurNode[Current Point & Scope] --> PE
+        Hist[Historical Trajectories] --> PE
+        PE --> Traj[Predicted Trajectory τ]
+        PE --> SkillNeed[Proactive Skill Dispatch]
+        PE --> PrePkt[Pre-Resolved Context Packets]
+        PE --> EarlyWarn[Pre-emptive Friction Detection]
+    end
+
+    subgraph S3["Action & Orchestration"]
+        Traj --> Orch[Pre-Cognitive Orchestrator]
+        SkillNeed --> Skills[Antigravity Progressive Skills]
+        PrePkt --> Agents[12-Agent Closed Loop]
+        EarlyWarn --> WB[Wellbeing & Safeguards]
+    end
+
+    S1 <--> S2
+    S3 --> S1
+```
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Unified State Persistence**: Connects BART's Universal ERD graph directly to SQLite WAL persistence (`.antigravity/storage/`) to allow state serialization and zero-data-loss recovery across restarts, matching the `disk-persistence` skill pattern.
+>
+> **Intentional Pre-Cognition**: Instead of agents waiting reactively for errors or explicit user prompts, projects declare an `Intent` (goal state, mandate, constraints), and the `PreCognitionEngine` pre-calculates the next 1–3 steps, pre-fetches the required `ContextPacket`s, and predicts the exact Antigravity skills needed.
+
+---
+
+## Proposed Changes
+
+### Component 1: Core Pre-Cognition & Intent Contracts
+#### [NEW] [`src/core/precognition.py`](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/src/core/precognition.py)
+* Defines `ProjectIntent`: `project_id`, `mandate`, `desired_state`, `constraints`, `horizon_steps`.
+* Defines `PreCognitionTrajectory`: sequence of anticipated nodes, expected transitions, and transition probabilities ($P(N_{t+1} \mid N_t, \text{Intent})$).
+* Defines `PredictedSkillNeed`: skill name (e.g. `disk-persistence`, `tax-optimization`, `role-transition`), confidence, and trigger conditions.
+* Defines `AnticipatedFriction`: risk category, lead-time in steps, and preventive counter-measures.
+
+---
+
+### Component 2: Dynamic Pre-Cognition Engine
+#### [NEW] [`src/context_engine/precognition.py`](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/src/context_engine/precognition.py)
+* Implements `PreCognitiveEngine`:
+  1. **Trajectory Projection**: Given current project state and intent, walks the graph along high-relevance paths to predict the next 3 probable state nodes.
+  2. **Skill Matching**: Maps anticipated nodes to registered Antigravity skills and tools before execution stalls.
+  3. **Context Pre-fetching**: Calls `ContextResolver.resolve_context` ahead of time to build ready-to-consume `ContextPacket`s.
+  4. **Pre-emptive Anomaly Shielding**: Flags projected bottleneck conditions (e.g., workload imbalance, VAT classification divergence).
+
+---
+
+### Component 3: Self-Preservation & Graph Persistence Bridge
+#### [NEW] [`src/graph/persistence_bridge.py`](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/src/graph/persistence_bridge.py)
+* Provides `GraphPersistenceBridge` backed by SQLite WAL:
+  * `save_project_state(project_id, erd_graph, agent_states, intent)`: Writes atomic snapshot vectors and JSON/BLOB data.
+  * `restore_project_state(project_id)`: Rehydrates full Universal ERD, agent states, and active observations.
+  * `list_checkpoints(project_id)`: Returns timeline of saved states.
+
+---
+
+### Component 4: Pre-Cognitive Orchestrator Upgrade
+#### [MODIFY] [`src/agents/orchestrator.py`](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/src/agents/orchestrator.py)
+* Upgrades `OrchestratorAgent` from reactive threshold checking to proactive pre-cognition:
+  * Checks `PreCognitiveEngine.predict_next_actions()` on every loop iteration.
+  * Auto-dispatches appropriate skills and passes pre-fetched `ContextPacket`s directly to the next agent.
+
+---
+
+### Component 5: Specifications & Skill Documentation
+#### [NEW] [`specs/06_SELF_PRESERVATION_AND_PRECOGNITION_SPEC.md`](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/specs/06_SELF_PRESERVATION_AND_PRECOGNITION_SPEC.md)
+* Full mathematical and structural specification of the persistence bridge, intent contracts, and pre-cognition pipeline.
+
+---
+
+## Verification Plan
+
+### Automated Tests
+* Run unit tests verifying:
+  1. **Self-Preservation**: Snapshot save and restore round-trips via `GraphPersistenceBridge`.
+  2. **Intentional Pre-Cognition**: Trajectory projection, skill need prediction, and pre-fetched `ContextPacket` generation.
+  3. **Orchestrator Integration**: End-to-end loop running with proactive skill dispatch.
+```powershell
+pytest tests/test_precognition_and_persistence.py -v
+```
+
+### Manual / API Verification
+* Query the `/api/precognition/predict` and `/api/project/checkpoint` endpoints on `src/server.py` to inspect predicted trajectories and persisted project states.
+
+

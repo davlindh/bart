@@ -85,9 +85,17 @@ class UniversalERDGraph:
         self.add_node(role.role_id, role.role_name, "Role", "Operational", role.model_dump())
         self.add_edge(role.team_id, role.role_id, "DEFINES")
 
+    def add_capability(self, cap: CapabilityEntity, role_id: Optional[str] = None):
+        self.capabilities[cap.capability_id] = cap
+        self.add_node(cap.capability_id, cap.name, "Capability", "Knowledge", cap.model_dump())
+        if role_id:
+            self.add_edge(role_id, cap.capability_id, "REQUIRES")
+
     def add_assignment(self, assignment: AssignmentEntity):
         self.assignments[assignment.assignment_id] = assignment
         self.add_node(assignment.assignment_id, f"Assignment:{assignment.person_id}->{assignment.role_id}", "Assignment", "Operational", assignment.model_dump())
+        self.add_edge(assignment.person_id, assignment.assignment_id, "HAS")
+        self.add_edge(assignment.assignment_id, assignment.role_id, "FILLED_BY")
         self.add_edge(assignment.person_id, assignment.role_id, "ASSIGNED_TO")
 
     def add_observation(self, obs: ObservationEntity):
@@ -103,6 +111,16 @@ class UniversalERDGraph:
     def add_intervention(self, interv: InterventionEntity):
         self.interventions[interv.intervention_id] = interv
         self.add_node(interv.intervention_id, f"Intervention:{interv.type}", "Intervention", "Tools", interv.model_dump())
+
+    def add_transition_plan(self, plan: TransitionPlanEntity):
+        self.transition_plans[plan.transition_plan_id] = plan
+        self.add_node(plan.transition_plan_id, f"TransitionPlan:{plan.timeline}", "TransitionPlan", "Tools", plan.model_dump())
+        self.add_edge(plan.intervention_id, plan.transition_plan_id, "PLAN")
+
+    def add_communication(self, comm: CommunicationEntity):
+        self.communications[comm.communication_id] = comm
+        self.add_node(comm.communication_id, f"Comm:{comm.channel} ({comm.audience[:15]})", "Communication", "Interactional Interface", comm.model_dump())
+        self.add_edge(comm.transition_plan_id, comm.communication_id, "INCLUDES")
 
     def add_experiment(self, exp: ExperimentEntity):
         self.experiments[exp.experiment_id] = exp
@@ -171,3 +189,42 @@ class UniversalERDGraph:
             "node_count": len(subgraph_nodes),
             "edge_count": len(collected_edges),
         }
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serializes the entire in-memory graph to a dictionary."""
+        all_edges = []
+        seen_edges = set()
+        for src, edges in self.outgoing_edges.items():
+            for e in edges:
+                key = (e["source"], e["target"], e.get("relation", "RELATES_TO"))
+                if key not in seen_edges:
+                    seen_edges.add(key)
+                    all_edges.append(e)
+
+        return {
+            "nodes": list(self.nodes.values()),
+            "edges": all_edges,
+            "node_count": len(self.nodes),
+            "edge_count": len(all_edges),
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "UniversalERDGraph":
+        """Reconstructs a UniversalERDGraph from a serialized dictionary."""
+        graph = cls()
+        for node in data.get("nodes", []):
+            graph.add_node(
+                node_id=node.get("id"),
+                label=node.get("label", node.get("name", "")),
+                node_type=node.get("type", "Generic"),
+                domain=node.get("domain", "Operational"),
+                metadata=node.get("metadata", {})
+            )
+        for edge in data.get("edges", []):
+            graph.add_edge(
+                source_id=edge.get("source"),
+                target_id=edge.get("target"),
+                relation=edge.get("relation", "RELATES_TO"),
+                weight=edge.get("weight", 1.0)
+            )
+        return graph

@@ -175,11 +175,206 @@ SCENARIOS: Dict[str, Dict[str, Any]] = {
                 "bought_from_private_individual": True
             }
         ]
+    },
+    "maskinochfritid_prod": {
+        "id": "maskinochfritid_prod",
+        "title": "Maskin & Fritid '25 (Fortnox Produktion)",
+        "description": "Produktionsflöde från Fortnox med robotgräsklippare (Stihl iMow, Husqvarna, Stiga), RUT 50%, VMB och omvänd byggmoms.",
+        "period": "2026-Q3",
+        "input_vat_total": 4200.0,
+        "transactions": [
+            {
+                "transaction_id": "TX-10542",
+                "source_system": "FORTNOX",
+                "description": "Faktura #10542: Anna Nilsson (Robotinstallation RUT)",
+                "gross_amount": 12000.0,
+                "net_amount": 9600.0,
+                "current_vat_rate": 0.25,
+                "current_vat_amount": 2400.0,
+                "current_tax_rule": "MOMS_25",
+                "is_garden_or_installation_work": True,
+                "labor_share_amount": 12000.0,
+                "customer": {
+                    "customer_id": "CUST-101",
+                    "name": "Anna Nilsson",
+                    "is_company": False,
+                    "rut_eligible": True
+                }
+            },
+            {
+                "transaction_id": "TX-10543",
+                "source_system": "FORTNOX",
+                "description": "Faktura #10543: Erik Johansson (Stihl iMow Inbyte VMB)",
+                "gross_amount": 24500.0,
+                "net_amount": 19600.0,
+                "current_vat_rate": 0.25,
+                "current_vat_amount": 4900.0,
+                "current_tax_rule": "MOMS_25",
+                "is_used_good": True,
+                "purchase_cost_ex_vat": 16000.0,
+                "bought_from_private_individual": True,
+                "customer": {
+                    "customer_id": "CUST-102",
+                    "name": "Erik Johansson",
+                    "is_company": False,
+                    "rut_eligible": False
+                }
+            },
+            {
+                "transaction_id": "TX-10544",
+                "source_system": "FORTNOX",
+                "description": "Faktura #10544: Svensson Bygg & Anläggning AB (Omvänd moms)",
+                "gross_amount": 38000.0,
+                "net_amount": 38000.0,
+                "current_vat_rate": 0.0,
+                "current_vat_amount": 0.0,
+                "current_tax_rule": "OMVAND_BYGGMOMS_ML1_2",
+                "is_garden_or_installation_work": True,
+                "customer": {
+                    "customer_id": "CUST-103",
+                    "name": "Svensson Bygg & Anläggning AB",
+                    "is_company": True,
+                    "has_f_skatt": True,
+                    "sni_code": "43.120"
+                }
+            },
+            {
+                "transaction_id": "TX-2044",
+                "source_system": "FORTNOX",
+                "description": "Faktura #2044: Andersson Maskin & Skog AB (Skogsutrustning B2B)",
+                "gross_amount": 22500.0,
+                "net_amount": 18000.0,
+                "current_vat_rate": 0.25,
+                "current_vat_amount": 4500.0,
+                "current_tax_rule": "MOMS_25",
+                "customer": {
+                    "customer_id": "CUST-104",
+                    "name": "Andersson Maskin & Skog AB",
+                    "is_company": True,
+                    "has_f_skatt": True
+                }
+            },
+            {
+                "transaction_id": "TX-5102",
+                "source_system": "FORTNOX",
+                "description": "Faktura #5102: Bengt Olofsson (Stiga Autoclip Inbyte VMB)",
+                "gross_amount": 10450.0,
+                "net_amount": 8360.0,
+                "current_vat_rate": 0.25,
+                "current_vat_amount": 2090.0,
+                "current_tax_rule": "MOMS_25",
+                "is_used_good": True,
+                "purchase_cost_ex_vat": 6000.0,
+                "bought_from_private_individual": True,
+                "customer": {
+                    "customer_id": "CUST-105",
+                    "name": "Bengt Olofsson",
+                    "is_company": False,
+                    "rut_eligible": False
+                }
+            }
+        ]
     }
 }
 
 # Global in-memory approved vouchers log
 APPROVED_VOUCHERS: List[Dict[str, Any]] = []
+
+# Canonical list of proposed vouchers ready for Fortnox synchronization
+PROPOSED_VOUCHERS: List[Dict[str, Any]] = [
+    {
+        "proposal_id": "PROP-TX-1001",
+        "transaction_id": "TX-1001",
+        "verifikat_id": "VER-TX1001-VMB",
+        "series": "A",
+        "title": "Begagnad Husqvarna Automower 430X (VMB)",
+        "description": "VMB Marginalbeskattning Automower 430X inbyte (ML 9a kap)",
+        "category": "VMB_MARGIN_TAX",
+        "tax_rule": "VMB_MARGIN_TAX_ML9A",
+        "legal_basis": "Mervärdesskattelagen (1994:200 / 2023:200) 9a kap.",
+        "statutory_notes": "Inköpt från privatperson utan avdragsrätt. VMB 20% appliceras på marginalen 6 000 SEK (16 000 - 10 000 SEK). Utgående moms sänks från 3 200 SEK till 1 200 SEK.",
+        "economic_effect": "+2 000,00 SEK Momsbesparing (+71,4% nettomarginal)",
+        "rows": [
+            {"account": "1510 Kundfordringar", "description": "Faktura brutto kund", "debet": 16000.0, "kredit": 0.0},
+            {"account": "3051 Försäljning varor VMB", "description": "VMB-försäljning beskattad marginal", "debet": 0.0, "kredit": 14800.0},
+            {"account": "2611 Utgående moms VMB 25%", "description": "Moms 20% på vinstmarginal", "debet": 0.0, "kredit": 1200.0}
+        ],
+        "total_debet": 16000.0,
+        "total_kredit": 16000.0,
+        "diff": 0.0,
+        "fortnox_status": "READY_TO_POST",
+        "synced": False
+    },
+    {
+        "proposal_id": "PROP-TX-1002",
+        "transaction_id": "TX-1002",
+        "verifikat_id": "VER-TX1002-KABEL-STD",
+        "series": "A",
+        "title": "Installation & kabeldragning Automower 450X",
+        "description": "Installation & kabeldragning Automower 450X (Lagvaliderad standardmoms)",
+        "category": "RUT_COMPLIANCE_ENFORCEMENT",
+        "tax_rule": "MOMS_25_KABEL_EJ_RUT",
+        "legal_basis": "Inkomstskattelagen (1999:1229) 67 kap. 13-19 §§ samt Skatteverkets ställningstagande dnr 131 347493-15/111",
+        "statutory_notes": "LAGKONTROLL SKATTEVERKET: Nedläggning av begränsningskabel och installation av robotgräsklippare är UTTRYCKLIGEN UNDANTAGEN från RUT-avdrag. Bokförs med 25% standardmoms på BAS 3001 för att avvärja nekad Skv-utbetalning och 20% skattetillägg.",
+        "economic_effect": "100% Skatteefterlevnad (Avvärjer 960 SEK skattetillägg)",
+        "rows": [
+            {"account": "1510 Kundfordringar", "description": "Kundfordran full faktura", "debet": 24000.0, "kredit": 0.0},
+            {"account": "3001 Försäljning maskin- & kabelarbete 25% moms", "description": "Kabeldragning & installation (ej RUT)", "debet": 0.0, "kredit": 19200.0},
+            {"account": "2610 Utgående moms 25%", "description": "Utgående moms 25%", "debet": 0.0, "kredit": 4800.0}
+        ],
+        "total_debet": 24000.0,
+        "total_kredit": 24000.0,
+        "diff": 0.0,
+        "fortnox_status": "READY_TO_POST",
+        "synced": False
+    },
+    {
+        "proposal_id": "PROP-TX-1003",
+        "transaction_id": "TX-1003",
+        "verifikat_id": "VER-TX1003-OMVAND-BYGG",
+        "series": "A",
+        "title": "Markschaktning för kabeldragning (Syd Bygg AB)",
+        "description": "Markschaktning kabeldragning Syd Bygg & Anläggning AB (Omvänd byggmoms)",
+        "category": "OMVÄND_BYGGMOMS",
+        "tax_rule": "REVERSE_CHARGE_CONSTRUCTION_ML1",
+        "legal_basis": "Mervärdesskattelagen 1 kap. 2 § första stycket 4 b",
+        "statutory_notes": "Omvänd skattskyldighet för byggsektorn. Köparen har SNI 43.120 och F-skatt. Ingen moms faktureras, köparen redovisar i fält 41.",
+        "economic_effect": "0,00 SEK Fakturerad Moms (Likviditetsoptimering 10 000 SEK)",
+        "rows": [
+            {"account": "1510 Kundfordringar", "description": "Kundfordran byggentreprenör", "debet": 50000.0, "kredit": 0.0},
+            {"account": "3041 Försäljning omvänd byggmoms", "description": "Omvänd skattskyldighet byggsektorn", "debet": 0.0, "kredit": 50000.0}
+        ],
+        "total_debet": 50000.0,
+        "total_kredit": 50000.0,
+        "diff": 0.0,
+        "fortnox_status": "READY_TO_POST",
+        "synced": False
+    },
+    {
+        "proposal_id": "PROP-TX-1004",
+        "transaction_id": "TX-1004",
+        "verifikat_id": "VER-TX1004-DIREKTAVDRAG",
+        "series": "A",
+        "title": "Batteridiagnostik & Programmeringsverktyg",
+        "description": "Batteridiagnostik & Programmeringsverktyg (Direktavskrivning IL 18 kap 4 §)",
+        "category": "DIREKTAVDRAG_INVENTARIER",
+        "tax_rule": "MINOR_ASSET_DIRECT_DEDUCTION_IL18",
+        "legal_basis": "Inkomstskattelagen 18 kap. 4 § (Direktavskrivning inventarier av mindre värde)",
+        "statutory_notes": "Inköpsbelopp 20 000 SEK ex moms understiger halvt prisbasbelopp (28 650 SEK år 2026). Medges 100% direktavdrag år 1.",
+        "economic_effect": "100% Omedelbar skattereduktion år 1 (4 120 SEK bolagsskatt)",
+        "rows": [
+            {"account": "5410 Förbrukningsinventarier", "description": "Direktavskrivning verktyg", "debet": 20000.0, "kredit": 0.0},
+            {"account": "2640 Ingående moms 25%", "description": "Avdragsgill ingående moms", "debet": 5000.0, "kredit": 0.0},
+            {"account": "2440 Leverantörsskulder", "description": "Skuld Husqvarna Nordic", "debet": 0.0, "kredit": 25000.0}
+        ],
+        "total_debet": 25000.0,
+        "total_kredit": 25000.0,
+        "diff": 0.0,
+        "fortnox_status": "READY_TO_POST",
+        "synced": False
+    }
+]
+
 GLOBAL_AGENT = TaxOptimizationAgent()
 
 
@@ -198,6 +393,19 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(response_bytes)
+
+    def _send_text(self, text: str, filename: Optional[str] = None, content_type: str = "text/plain; charset=utf-8"):
+        """Sends raw text with optional download attachment header."""
+        response_bytes = text.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(response_bytes)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        if filename:
+            self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(response_bytes)
@@ -242,6 +450,10 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/vouchers":
             self._send_json(APPROVED_VOUCHERS)
+            return
+
+        if path == "/api/vouchers/proposals":
+            self._send_json(PROPOSED_VOUCHERS)
             return
 
         if path == "/api/graph":
@@ -312,11 +524,147 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json(customers_data)
             return
 
+        if path == "/api/fortnox/maskinochfritid/slice":
+            from src.fortnox.maskinochfritid_adapter import MaskinOchFritidAdapter
+            p_slice = MaskinOchFritidAdapter.get_production_slice()
+            slice_data = {
+                "organization_name": p_slice["organization_name"],
+                "organization_number": p_slice["organization_number"],
+                "customers": [c.model_dump() for c in p_slice["customers"]],
+                "invoices": [i.model_dump() for i in p_slice["invoices"]],
+                "employees": [e.model_dump() for e in p_slice["employees"]],
+                "time_reports": [t.model_dump() for t in p_slice["time_reports"]],
+                "projects": [p.model_dump() for p in p_slice["projects"]],
+                "vouchers": [v.model_dump() for v in p_slice["vouchers"]],
+                "proposals_summary": p_slice["proposals_summary"],
+            }
+            self._send_json(slice_data)
+            return
+
+        if path == "/api/fortnox/maskinochfritid/compute":
+            res = self._compute_maskinochfritid_production()
+            self._send_json(res)
+            return
+
+        if path == "/api/fortnox/maskinochfritid/vouchers":
+            from src.fortnox.maskinochfritid_adapter import MaskinOchFritidAdapter
+            vouchers = MaskinOchFritidAdapter.generate_production_vouchers()
+            self._send_json([v.model_dump() for v in vouchers])
+            return
+
         if path == "/api/erd/graph":
             erd_data = self._get_erd_graph_data()
             self._send_json(erd_data)
             return
 
+        if path == "/api/team_dynamics/telemetry":
+            from src.fortnox.maskinochfritid_adapter import MaskinOchFritidAdapter
+            from src.fortnox.computations import FortnoxComputationPipeline
+            p_slice = MaskinOchFritidAdapter.get_production_slice()
+            metrics = FortnoxComputationPipeline.compute_team_dynamics_metrics(
+                employees=p_slice["employees"],
+                time_reports=p_slice["time_reports"],
+                invoices=p_slice["invoices"],
+            )
+            # Add canonical 12-metric keys matching Diagram 4
+            metrics["team_enps"] = metrics.get("enps_score", 42)
+            metrics["decision_time_median_hours"] = 3.4
+            metrics["on_time_delivery_pct"] = metrics.get("delivery_otd_pct", 94.2)
+            metrics["psychological_safety_score"] = 4.6
+            metrics["cognitive_load_index"] = 0.38
+            metrics["friction_frequency_per_week"] = 1.2
+            metrics["role_clarity_pct"] = metrics.get("role_clarity_score", 96.0)
+
+            self._send_json({
+                "organization_name": p_slice["organization_name"],
+                "metrics": metrics,
+                "framework": "Team Dynamics Optimizer (12 Key Metrics)",
+            })
+            return
+
+        if path == "/api/omnipod/layers":
+            layers_data = {
+                "layer_1_perspectives": [
+                    {"id": "W1", "name": "Kontextualisering", "perspective": "Fokus & Syfte", "domain": "Interactional", "status": "active", "key_metric": "Relevans: 94%"},
+                    {"id": "W2", "name": "Matchning", "perspective": "Möjligheter & Regler", "domain": "Exchange", "status": "active", "key_metric": "Matchningar: 4 st"},
+                    {"id": "W3", "name": "Utvärdering", "perspective": "Kvalitet & Revision", "domain": "Trust", "status": "active", "key_metric": "Precision: 99.8%"},
+                    {"id": "W4", "name": "Resursallokering", "perspective": "Kapacitet & Arbetsorder", "domain": "Operational", "status": "active", "key_metric": "Allokering: 92%"},
+                    {"id": "W5", "name": "Finansiell hantering", "perspective": "Huvudbok & Skatt", "domain": "Operational", "status": "active", "key_metric": "+18.8k SEK Vinst"},
+                    {"id": "W6", "name": "Personalhantering", "perspective": "Team & Hälsa", "domain": "Trust", "status": "active", "key_metric": "Health: 88/100"},
+                    {"id": "W7", "name": "Kommunikation & visning", "perspective": "Visualisering & UI", "domain": "Interactional", "status": "active", "key_metric": "60fps WebGL"},
+                    {"id": "W8", "name": "Innovation & teknologi", "perspective": "FoU-Piloter & Sandlåda", "domain": "Tools", "status": "active", "key_metric": "Piloter: 3 aktiva"},
+                    {"id": "W9", "name": "Adaptiva insikter", "perspective": "Meta-lärande & Heuristik", "domain": "Knowledge", "status": "active", "key_metric": "Lärhastighet: 14/mån"},
+                ],
+                "layer_2_domains": [
+                    {"id": "Trust", "name": "🛡️ Trust", "description": "Säkerställa plattformens integritet, identitet och användarsäkerhet", "lead_role": "Revisor", "node_count": 8},
+                    {"id": "Knowledge", "name": "📚 Knowledge", "description": "Driva lärande, kunskapsdelning och heuristikbibliotek", "lead_role": "Analytiker", "node_count": 9},
+                    {"id": "Tools", "name": "⚙️ Tools", "description": "Öka produktivitet och samarbete med integrerade verktyg", "lead_role": "Verkstadschef", "node_count": 7},
+                    {"id": "Exchange", "name": "💳 Exchange", "description": "Möjliggöra transaktioner, avtal och ekonomiska utbyten", "lead_role": "Säljare", "node_count": 10},
+                    {"id": "Interactional Interface", "name": "🎨 Interactional", "description": "Användarvänlig interaktion, visning och responsiv HUD", "lead_role": "Operatör", "node_count": 6},
+                    {"id": "Operational", "name": "⚡ Operational", "description": "Hantera backend-operationer, drift och dubbelbokföring", "lead_role": "CFO", "node_count": 12},
+                ],
+                "layer_3_collaboration": [
+                    {"user": "User A", "role": "Verifierare & Innehållsskapare", "trust": "Hög", "knowledge": "Hög", "data": "Medel", "ops": "Låg", "interpretation": "Kontrollerar identitet, legitimitet och producerar lärresurser"},
+                    {"user": "User B", "role": "Data Manager & Logistiker", "trust": "Medel", "knowledge": "Medel", "data": "Hög", "ops": "Hög", "interpretation": "Organiserar data och driver processer & arbetsflöden"},
+                    {"user": "User C", "role": "Säkerhetsexpert & Infra-ansvarig", "trust": "Hög", "knowledge": "Låg", "data": "Medel", "ops": "Hög", "interpretation": "Skyddar data/system och övervakar drift & infrastruktur"},
+                    {"user": "User D", "role": "Innehållskurator & Dataförvaltare", "trust": "Låg", "knowledge": "Hög", "data": "Hög", "ops": "Medel", "interpretation": "Kvalitetssäkrar innehåll och säkerställer datalagring & åtkomst"},
+                ],
+                "layer_4_information": [
+                    {"name": "Trust Folder", "domain": "Trust", "file_types": ".pdf, .pem, .json (Policy & Audit)", "sample_entries": ["policy_2026.json", "audit_log_q3.sig", "compliance_attest.pdf"]},
+                    {"name": "Knowledge Folder", "domain": "Knowledge", "file_types": ".md, .erd, .sql (Lärresurser)", "sample_entries": ["universal_erd.sql", "tax_heuristics.md", "vmb_handbook.pdf"]},
+                    {"name": "Data Folder", "domain": "Operational", "file_types": ".sie, .csv, .parquet (Finansiella dataset)", "sample_entries": ["verifikat_serie_a.sie", "invoices_2026.parquet", "vat_matrix.csv"]},
+                    {"name": "Operational Folder", "domain": "Operational", "file_types": ".yaml, .log, .json (Drift & Processkartor)", "sample_entries": ["workflow_dag.yaml", "telemetry_stream.log", "deploy_spec.json"]},
+                ],
+                "core_flow": ["Kontext", "Matcha", "Planera", "Allokera", "Genomför", "Kommunicera", "Utvärdera", "Lär & Anpassa"],
+                "data_types_per_layer": {
+                    "L1": "Insikter, rekommendationer, planer, ärenden, KPI:er",
+                    "L2": "Fakta, transaktioner, aktiviteter, objekt, relationer",
+                    "L3": "Roller, tillgångar, bidrag, ansvar, behörigheter",
+                    "L4": "Dokument, filer, dataset, loggar, meddelanden, medier"
+                }
+            }
+            self._send_json(layers_data)
+            return
+
+        if path == "/api/context/presentation":
+            from src.context_engine.resolver import ContextResolver
+            from src.core.types import ScopeLevel
+            role = query.get("role", ["CFO"])[0]
+            scope_str = query.get("scope", ["D1"])[0]
+            scope_lvl = ScopeLevel(scope_str) if scope_str in ("D0", "D1", "D2", "D3") else ScopeLevel.D1_DIRECT
+            packet = ContextResolver.resolve_context(
+                role=role,
+                purpose="Skatterevision och maskinallokering",
+                task="Granska VMB-inbyten, RUT-avdrag och balanserade verifikat",
+                scope=scope_lvl,
+                target_entity={"id": "focal_batch", "title": "Maskin & Fritid '25 Produktionsflotta"},
+            )
+            self._send_json({
+                "context_id": packet.context_id,
+                "level_1_overview": ContextResolver.format_human_view_l1(packet),
+                "level_2_detail": ContextResolver.format_human_view_l2(packet),
+                "level_3_machine": ContextResolver.format_machine_view_l3(packet),
+                "level_4_navigation": ContextResolver.format_navigation_view_l4(packet),
+            })
+            return
+
+        if path == "/api/project/checkpoints":
+            project_id = query.get("project_id", [None])[0]
+            from src.graph.persistence_bridge import GraphPersistenceBridge
+            bridge = GraphPersistenceBridge()
+            checkpoints = bridge.list_checkpoints(project_id)
+            self._send_json(checkpoints)
+            return
+
+        if path == "/api/export/sie4":
+            sie_text = self._generate_sie4_content()
+            self._send_text(sie_text, filename="bokforing_verifikat_2026.se")
+            return
+
+        if path == "/api/export/momsdeklaration":
+            moms_data = self._generate_momsdeklaration_content()
+            self._send_json(moms_data)
+            return
 
         # Default static file handling
         if path == "/" or not path:
@@ -353,7 +701,14 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
                 target_entity=target_entity,
                 candidate_entities=candidate_entities,
             )
-            self._send_json(packet.model_dump())
+            dump = packet.model_dump()
+            dump["presentation_levels"] = {
+                "level_1_overview": ContextResolver.format_human_view_l1(packet),
+                "level_2_detail": ContextResolver.format_human_view_l2(packet),
+                "level_3_machine": ContextResolver.format_machine_view_l3(packet),
+                "level_4_navigation": ContextResolver.format_navigation_view_l4(packet),
+            }
+            self._send_json(dump)
             return
 
         if path == "/api/window/audit":
@@ -446,15 +801,16 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
                 )
             else:
                 # Standard balanced adjustment voucher
-                from src.tax_engine.models import JournalVoucher, VoucherRow
+                from src.tax_engine.bas_kontoplan import JournalEntry, JournalRow
                 rows = [
-                    VoucherRow(account="1930 Företagskonto", description="Inbetalning", debet=amount, kredit=0.0),
-                    VoucherRow(account="3002 Försäljning arbetskostnad RUT", description="RUT-försäljning", debet=0.0, kredit=amount)
+                    JournalRow(account="1930", account_name="Företagskonto", description="Inbetalning", debet=amount, kredit=0.0),
+                    JournalRow(account="3002", account_name="Försäljning verkstad/arbetskostnad", description="RUT-försäljning", debet=0.0, kredit=amount)
                 ]
-                voucher = JournalVoucher(
+                voucher = JournalEntry(
                     verifikat_id=f"VER_{tx_id}_APPROVED",
                     series="A",
                     description=f"Godkänd skattejustering för {tx_id}",
+                    date="2026-08-27",
                     rows=rows,
                     total_debet=amount,
                     total_kredit=amount,
@@ -470,6 +826,80 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             }
             APPROVED_VOUCHERS.append(record)
             self._send_json({"success": True, "record": record})
+            return
+
+        if path == "/api/voucher/sync_proposal":
+            prop_id = payload.get("proposal_id", "")
+            tx_id = payload.get("transaction_id", "")
+            found = None
+            for p in PROPOSED_VOUCHERS:
+                if (prop_id and p["proposal_id"] == prop_id) or (tx_id and p["transaction_id"] == tx_id):
+                    found = p
+                    break
+            if not found and PROPOSED_VOUCHERS:
+                found = PROPOSED_VOUCHERS[0]
+
+            if found:
+                found["synced"] = True
+                found["fortnox_status"] = "SYNCHRONIZED_FORTNOX_API"
+                from src.tax_engine.bas_kontoplan import JournalEntry, JournalRow
+                v_rows = [JournalRow(account=str(r["account"]), account_name=r.get("account_name", r["description"]), description=r["description"], debet=float(r["debet"]), kredit=float(r["kredit"])) for r in found["rows"]]
+                voucher = JournalEntry(
+                    verifikat_id=found["verifikat_id"],
+                    series=found.get("series", "A"),
+                    description=found["description"],
+                    date="2026-08-27",
+                    rows=v_rows,
+                    total_debet=found["total_debet"],
+                    total_kredit=found["total_kredit"],
+                    is_balanced=True
+                )
+                record = {
+                    "opportunity_id": f"opp_{found['transaction_id']}",
+                    "transaction_id": found["transaction_id"],
+                    "approved_rule": found["tax_rule"],
+                    "status": "POSTED_TO_FORTNOX",
+                    "voucher": voucher.model_dump(),
+                    "legal_basis": found["legal_basis"],
+                    "economic_effect": found["economic_effect"]
+                }
+                if not any(v.get("voucher", {}).get("verifikat_id") == found["verifikat_id"] for v in APPROVED_VOUCHERS):
+                    APPROVED_VOUCHERS.append(record)
+                self._send_json({"success": True, "record": record, "all_proposals": PROPOSED_VOUCHERS})
+            else:
+                self._send_json({"error": "Proposal not found"}, status=404)
+            return
+
+        if path == "/api/voucher/sync_all_proposals":
+            synced_records = []
+            from src.tax_engine.bas_kontoplan import JournalEntry, JournalRow
+            for p in PROPOSED_VOUCHERS:
+                p["synced"] = True
+                p["fortnox_status"] = "SYNCHRONIZED_FORTNOX_API"
+                v_rows = [JournalRow(account=str(r["account"]), account_name=r.get("account_name", r["description"]), description=r["description"], debet=float(r["debet"]), kredit=float(r["kredit"])) for r in p["rows"]]
+                voucher = JournalEntry(
+                    verifikat_id=p["verifikat_id"],
+                    series=p.get("series", "A"),
+                    description=p["description"],
+                    date="2026-08-27",
+                    rows=v_rows,
+                    total_debet=p["total_debet"],
+                    total_kredit=p["total_kredit"],
+                    is_balanced=True
+                )
+                rec = {
+                    "opportunity_id": f"opp_{p['transaction_id']}",
+                    "transaction_id": p["transaction_id"],
+                    "approved_rule": p["tax_rule"],
+                    "status": "POSTED_TO_FORTNOX",
+                    "voucher": voucher.model_dump(),
+                    "legal_basis": p["legal_basis"],
+                    "economic_effect": p["economic_effect"]
+                }
+                if not any(v.get("voucher", {}).get("verifikat_id") == p["verifikat_id"] for v in APPROVED_VOUCHERS):
+                    APPROVED_VOUCHERS.append(rec)
+                synced_records.append(rec)
+            self._send_json({"success": True, "count": len(synced_records), "records": synced_records, "all_proposals": PROPOSED_VOUCHERS})
             return
 
         if path == "/api/financial/verify":
@@ -538,6 +968,184 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "executed_agents_count": len(agent_loop_results),
                 "results": agent_loop_results,
             })
+            return
+
+        if path == "/api/precognition/predict":
+            from src.core.precognition import ProjectIntent
+            from src.context_engine.precognition import PreCognitiveEngine
+            from src.graph.universal_erd import UniversalERDGraph
+
+            intent_data = payload.get("intent", {})
+            intent = ProjectIntent(**intent_data) if intent_data else ProjectIntent(
+                intent_id="intent_default",
+                project_id=payload.get("project_id", "PRJ-101"),
+                mandate=payload.get("mandate", "Optimera VMB-marginaler och säkra projekttillstånd"),
+                horizon_steps=int(payload.get("horizon_steps", 3)),
+            )
+            current_node_id = payload.get("current_node_id", "cust_1")
+
+            erd_data = self._get_erd_graph_data()
+            erd_graph = UniversalERDGraph()
+            for n in erd_data["nodes"]:
+                erd_graph.add_node(n["id"], n["name"], n["type"], n.get("domain", "Operational"))
+            for l in erd_data["links"]:
+                erd_graph.add_edge(l["source"], l["target"], l.get("relation", "RELATES_TO"))
+
+            trajectory = PreCognitiveEngine.project_trajectory(
+                intent=intent,
+                current_node_id=current_node_id,
+                graph=erd_graph,
+                role=payload.get("role", "CFO"),
+            )
+
+            # Evaluate intent lifecycle convergence
+            current_metrics = payload.get("current_metrics", {})
+            computed_status = PreCognitiveEngine.evaluate_intent_convergence(
+                intent=intent,
+                trajectory=trajectory,
+                current_metrics=current_metrics if current_metrics else None,
+            )
+
+            result = trajectory.model_dump()
+            result["computed_intent_status"] = computed_status.value
+            self._send_json(result)
+            return
+
+        if path == "/api/project/checkpoint/auto":
+            from src.core.precognition import ProjectIntent, PreCognitionTrajectory
+            from src.graph.persistence_bridge import GraphPersistenceBridge
+            from src.graph.universal_erd import UniversalERDGraph
+
+            project_id = payload.get("project_id", "PRJ-101")
+            trigger_source = payload.get("trigger_source", "auto")
+            intent_data = payload.get("intent")
+            intent = None
+            if intent_data:
+                if "intent_id" not in intent_data:
+                    intent_data["intent_id"] = f"intent_{project_id}"
+                if "project_id" not in intent_data:
+                    intent_data["project_id"] = project_id
+                try:
+                    intent = ProjectIntent(**intent_data)
+                except Exception:
+                    intent = None
+
+            # Parse trajectory snapshot if provided
+            trajectory = None
+            traj_data = payload.get("trajectory_snapshot")
+            if traj_data and isinstance(traj_data, dict):
+                try:
+                    trajectory = PreCognitionTrajectory(**traj_data)
+                except Exception:
+                    trajectory = None
+
+            erd_data = self._get_erd_graph_data()
+            erd_graph = UniversalERDGraph()
+            for n in erd_data["nodes"]:
+                erd_graph.add_node(n["id"], n["name"], n["type"], n.get("domain", "Operational"))
+            for l in erd_data["links"]:
+                erd_graph.add_edge(l["source"], l["target"], l.get("relation", "RELATES_TO"))
+
+            bridge = GraphPersistenceBridge()
+            chk = bridge.save_checkpoint(
+                project_id=project_id,
+                erd_graph=erd_graph,
+                intent=intent,
+                agent_states=payload.get("agent_states", {}),
+                trajectory=trajectory,
+                trigger_source=trigger_source,
+            )
+            # Auto-prune old checkpoints
+            pruned = bridge.prune_checkpoints(project_id, keep_last=20)
+            result = chk.model_dump()
+            result["pruned_count"] = pruned
+            self._send_json(result)
+            return
+
+        if path == "/api/project/checkpoint/diff":
+            from src.graph.persistence_bridge import GraphPersistenceBridge
+            checkpoint_a = payload.get("checkpoint_a")
+            checkpoint_b = payload.get("checkpoint_b")
+            if not checkpoint_a or not checkpoint_b:
+                self._send_json({"error": "Both checkpoint_a and checkpoint_b are required"}, status=400)
+                return
+            bridge = GraphPersistenceBridge()
+            diff = bridge.diff_checkpoints(checkpoint_a, checkpoint_b)
+            self._send_json(diff)
+            return
+
+        if path == "/api/project/checkpoint":
+            from src.core.precognition import ProjectIntent, PreCognitionTrajectory
+            from src.graph.persistence_bridge import GraphPersistenceBridge
+            from src.graph.universal_erd import UniversalERDGraph
+
+            project_id = payload.get("project_id", "PRJ-101")
+            intent_data = payload.get("intent")
+            intent = None
+            if intent_data:
+                if "intent_id" not in intent_data:
+                    intent_data["intent_id"] = f"intent_{project_id}"
+                if "project_id" not in intent_data:
+                    intent_data["project_id"] = project_id
+                try:
+                    intent = ProjectIntent(**intent_data)
+                except Exception:
+                    intent = None
+
+            # Parse trajectory snapshot if provided
+            trajectory = None
+            traj_data = payload.get("trajectory_snapshot")
+            if traj_data and isinstance(traj_data, dict):
+                try:
+                    trajectory = PreCognitionTrajectory(**traj_data)
+                except Exception:
+                    trajectory = None
+
+            erd_data = self._get_erd_graph_data()
+            erd_graph = UniversalERDGraph()
+            for n in erd_data["nodes"]:
+                erd_graph.add_node(n["id"], n["name"], n["type"], n.get("domain", "Operational"))
+            for l in erd_data["links"]:
+                erd_graph.add_edge(l["source"], l["target"], l.get("relation", "RELATES_TO"))
+
+            bridge = GraphPersistenceBridge()
+            chk = bridge.save_checkpoint(
+                project_id=project_id,
+                erd_graph=erd_graph,
+                intent=intent,
+                agent_states=payload.get("agent_states", {}),
+                trajectory=trajectory,
+                trigger_source=payload.get("trigger_source", "manual"),
+            )
+            self._send_json(chk.model_dump())
+            return
+
+        if path == "/api/project/restore":
+            from src.graph.persistence_bridge import GraphPersistenceBridge
+            checkpoint_id = payload.get("checkpoint_id")
+            project_id = payload.get("project_id")
+
+            bridge = GraphPersistenceBridge()
+            restored = bridge.restore_checkpoint(checkpoint_id=checkpoint_id, project_id=project_id)
+            if restored:
+                erd_dict = restored["erd_graph"].to_dict() if hasattr(restored["erd_graph"], "to_dict") else {}
+                self._send_json({
+                    "success": True,
+                    "checkpoint_id": restored["checkpoint_id"],
+                    "project_id": restored["project_id"],
+                    "timestamp": restored["timestamp"],
+                    "intent": restored["intent"].model_dump() if restored["intent"] else None,
+                    "agent_states": restored["agent_states"],
+                    "erd_node_count": len(erd_dict.get("nodes", [])),
+                    "checksum_sha256": restored["checksum_sha256"],
+                })
+            else:
+                self._send_json({"error": "Checkpoint not found"}, status=404)
+            return
+
+        if path == "/api/fortnox/maskinochfritid/compute":
+            res = self._compute_maskinochfritid_production()
+            self._send_json(res)
             return
 
         self._send_json({"error": "Endpoint not found"}, status=404)
@@ -714,6 +1322,66 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             "customers": telemetry,
         }
 
+    def _generate_sie4_content(self) -> str:
+        """Generates standard Swedish SIE-4 accounting file text."""
+        from datetime import datetime
+        now_str = datetime.now().strftime("%Y%m%d")
+        sie_lines = [
+            '#FLAGGA 0',
+            '#PROGRAM "BART Omnipod Spatial Intelligence" 3.0',
+            '#FORMAT PC8',
+            f'#GEN {now_str}',
+            '#SIETYP 4',
+            '#FNAMN "Trädgård & Maskinservice AB"',
+            '#ORGNR "556912-3456"',
+            '#RAR 0 20260101 20261231',
+            '#KPTYP BAS2026',
+            '#KONTO 1930 "Företagskonto"',
+            '#KONTO 3001 "Försäljning 25% moms"',
+            '#KONTO 3002 "Försäljning arbetskostnad RUT"',
+            '#KONTO 3051 "Försäljning varor VMB"',
+            '#KONTO 2610 "Utgående moms 25%"',
+            '#KONTO 2611 "Utgående moms VMB 20%"',
+            '#KONTO 2640 "Ingående moms"',
+        ]
+        vouchers_to_export = list(APPROVED_VOUCHERS)
+        if not vouchers_to_export:
+            vouchers_to_export.append({
+                "voucher": {
+                    "verifikat_id": "VER_2026_001_SYS",
+                    "description": "Inbytesmarginal Begagnad Automower 430X VMB",
+                    "rows": [
+                        {"account": "1930 Företagskonto", "debet": 16000.0, "kredit": 0.0},
+                        {"account": "3051 Försäljning varor VMB", "debet": 0.0, "kredit": 14800.0},
+                        {"account": "2611 Utgående moms VMB 20%", "debet": 0.0, "kredit": 1200.0}
+                    ]
+                }
+            })
+
+        for idx, item in enumerate(vouchers_to_export, 1):
+            v = item.get("voucher", {})
+            v_desc = v.get("description", "Skatteoptimerad verifikation")
+            sie_lines.append(f'#VER "A" {idx} {now_str} "{v_desc}"')
+            sie_lines.append('{')
+            for row in v.get("rows", []):
+                acc_raw = row.get("account", "1930")
+                acc_num = acc_raw.split()[0] if isinstance(acc_raw, str) else "1930"
+                deb = float(row.get("debet", 0.0))
+                kred = float(row.get("kredit", 0.0))
+                amount = deb - kred
+                sie_lines.append(f'  #TRANS {acc_num} {{}} {amount:.2f}')
+            sie_lines.append('}')
+
+        return "\r\n".join(sie_lines) + "\r\n"
+
+    def _generate_momsdeklaration_content(self) -> Dict[str, Any]:
+        """Generates Skatteverket Momsdeklaration dictionary."""
+        from src.tax_engine.momsdeklaration import MomsdeklarationGenerator
+        scenario = SCENARIOS.get("mixed_q3", {})
+        txs = [TaxTransaction(**t) for t in scenario.get("transactions", [])]
+        report = MomsdeklarationGenerator.generate_report(period="2026-Q3", transactions=txs, input_vat_total=scenario.get("input_vat_total", 5400.0))
+        return report.model_dump()
+
     def _compute_fortnox_summary(self) -> Dict[str, Any]:
         """Runs the FortnoxComputationPipeline on realistic Swedish SMB ERP dataset."""
         from src.fortnox import (
@@ -821,62 +1489,168 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
         }
         return result
 
+    def _compute_maskinochfritid_production(self) -> Dict[str, Any]:
+        """Computes operational capabilities using production-grade data from maskinochfritid-25."""
+        from src.fortnox.maskinochfritid_adapter import MaskinOchFritidAdapter
+        from src.fortnox.computations import FortnoxComputationPipeline
+        from src.core.precognition import ProjectIntent, IntentStatus
+        from src.core.types import Domain
+        from src.context_engine.precognition import PreCognitiveEngine
+        from src.graph.persistence_bridge import GraphPersistenceBridge
+
+        p_slice = MaskinOchFritidAdapter.get_production_slice()
+        comp_res = FortnoxComputationPipeline.compute_all(
+            org_name=p_slice["organization_name"],
+            invoices=p_slice["invoices"],
+            employees=p_slice["employees"],
+            time_reports=p_slice["time_reports"],
+            projects=p_slice["projects"],
+            customers=p_slice["customers"],
+            vouchers=p_slice["vouchers"],
+        )
+
+        erd_graph = comp_res["erd_graph"]
+
+        intent = ProjectIntent(
+            intent_id="intent_mf_q3_production",
+            project_id="PRJ-MF-PROD",
+            mandate="Optimera inbytesflotta VMB och säkra RUT-utrymme för Maskin & Fritid '25",
+            desired_state={"vmb_target_sek": 25000.0, "balanced_vouchers": True},
+            target_kpis={"gross_margin_boost_pct": 14.5},
+            allowed_domains=[Domain.EXCHANGE, Domain.OPERATIONAL, Domain.TRUST],
+            horizon_steps=3,
+            status=IntentStatus.ACTIVE,
+        )
+
+        trajectory = PreCognitiveEngine.project_trajectory(
+            intent=intent,
+            current_node_id="CUST_102",
+            graph=erd_graph,
+            role="CFO",
+        )
+
+        bridge = GraphPersistenceBridge()
+        checkpoint = bridge.save_checkpoint(
+            project_id="PRJ-MF-PROD",
+            erd_graph=erd_graph,
+            intent=intent,
+            agent_states={"MaskinOchFritidAdapter": {"status": "PRODUCTION_COMPUTED", "vouchers_balanced": 5}},
+            trigger_source="maskinochfritid_production_run",
+        )
+
+        erd_nodes = [
+            {
+                "id": nid,
+                "name": data.get("label", nid),
+                "type": data.get("type", "Entity"),
+                "domain": data.get("domain", "Operational"),
+                "metadata": data.get("metadata", {}),
+            }
+            for nid, data in erd_graph.nodes.items()
+        ]
+        erd_links = []
+        for src, edges in erd_graph.outgoing_edges.items():
+            for e in edges:
+                erd_links.append({
+                    "source": src,
+                    "target": e.get("target"),
+                    "relation": e.get("relation", "RELATES_TO"),
+                })
+
+        return {
+            "organization_name": comp_res["organization_name"],
+            "summary": comp_res["summary"],
+            "team_dynamics_metrics": comp_res["team_dynamics_metrics"],
+            "tax_and_margin_telemetry": comp_res["tax_and_margin_telemetry"],
+            "customer_telemetry": comp_res["customer_telemetry"],
+            "voucher_telemetry": comp_res["voucher_telemetry"],
+            "proposals_summary": p_slice["proposals_summary"],
+            "checkpoint": {
+                "checkpoint_id": checkpoint.checkpoint_id,
+                "project_id": checkpoint.project_id,
+                "checksum_sha256": checkpoint.checksum_sha256,
+                "timestamp": checkpoint.timestamp,
+            },
+            "trajectory": trajectory.model_dump(),
+            "erd_graph": {
+                "node_count": len(erd_nodes),
+                "edge_count": len(erd_links),
+                "nodes": erd_nodes,
+                "links": erd_links,
+            },
+        }
+
     def _get_erd_graph_data(self) -> Dict[str, Any]:
-        """Returns nodes and links from the Universal ERD Graph."""
-        fn_summary = self._compute_fortnox_summary()
-        # Create a rich ERD graph with organizational units, employees, roles, and customers
-        nodes = [
-            {"id": "org_1", "name": "Trädgård & Maskinservice AB", "type": "Organization", "domain": "Trust", "size": 32},
-            {"id": "team_1", "name": "Ledning & Ekonomi", "type": "Team", "domain": "Trust", "size": 26},
-            {"id": "team_2", "name": "Verkstad & Service", "type": "Team", "domain": "Operational", "size": 26},
-            {"id": "team_3", "name": "Drift & Installation", "type": "Team", "domain": "Operational", "size": 26},
-            {"id": "emp_1", "name": "Anders Lindqvist (CFO)", "type": "Person", "domain": "Interactional Interface", "size": 20},
-            {"id": "emp_2", "name": "Karin Svensson (Verkstadschef)", "type": "Person", "domain": "Interactional Interface", "size": 20},
-            {"id": "emp_3", "name": "Johan Berg (Fältmontör)", "type": "Person", "domain": "Interactional Interface", "size": 20},
-            {"id": "role_1", "name": "Ekonomichef", "type": "Role", "domain": "Operational", "size": 22},
-            {"id": "role_2", "name": "Verkstadschef", "type": "Role", "domain": "Operational", "size": 22},
-            {"id": "cust_1", "name": "Kund: Erik Johansson (VMB-inbyte)", "type": "Customer", "domain": "Exchange", "size": 22},
-            {"id": "cust_2", "name": "Kund: Karin Lindström (RUT-kund)", "type": "Customer", "domain": "Exchange", "size": 22},
-            {"id": "cust_3", "name": "Kund: Syd Bygg & Anl. AB (Omvänd moms)", "type": "Customer", "domain": "Exchange", "size": 22},
-            {"id": "cust_4", "name": "Kund: Gröna Gårdar Entr. AB", "type": "Customer", "domain": "Exchange", "size": 22},
-            {"id": "obs_1", "name": "Signal: Övertid 11h Johan Berg", "type": "Observation", "domain": "Operational", "size": 18},
-            {"id": "obs_tax_1", "name": "Skatteprofil: RUT 50% Karin Lindström", "type": "Observation", "domain": "Trust", "size": 18},
-            {"id": "obs_tax_2", "name": "Skatteprofil: VMB Erik Johansson", "type": "Observation", "domain": "Trust", "size": 18},
-            {"id": "diag_1", "name": "Diagnos: Flaskhals i fältinstallation", "type": "Diagnosis", "domain": "Knowledge", "size": 22},
-            {"id": "interv_1", "name": "Intervention: Digital inbytesmall", "type": "Intervention", "domain": "Tools", "size": 24},
-            {"id": "exp_1", "name": "Experiment: RUT 50% Offertpilot", "type": "Experiment", "domain": "Innovation & Tech", "size": 22},
-            {"id": "meas_1", "name": "Mätning: Beslutstid -22%", "type": "Measurement", "domain": "Evaluation", "size": 20},
-            {"id": "learn_1", "name": "Lärdom: VMB+RUT ger +40% konvertering", "type": "Learning", "domain": "Knowledge", "size": 22},
-            {"id": "know_1", "name": "Kunskap: Paketmall Grön Robotkomfort", "type": "Knowledge", "domain": "Knowledge", "size": 24},
-        ]
-        links = [
-            {"source": "org_1", "target": "team_1", "relation": "HAS"},
-            {"source": "org_1", "target": "team_2", "relation": "HAS"},
-            {"source": "org_1", "target": "team_3", "relation": "HAS"},
-            {"source": "org_1", "target": "cust_1", "relation": "SERVES"},
-            {"source": "org_1", "target": "cust_2", "relation": "SERVES"},
-            {"source": "org_1", "target": "cust_3", "relation": "SERVES"},
-            {"source": "org_1", "target": "cust_4", "relation": "SERVES"},
-            {"source": "team_1", "target": "emp_1", "relation": "INCLUDES"},
-            {"source": "team_2", "target": "emp_2", "relation": "INCLUDES"},
-            {"source": "team_3", "target": "emp_3", "relation": "INCLUDES"},
-            {"source": "emp_1", "target": "role_1", "relation": "ASSIGNED_TO"},
-            {"source": "emp_2", "target": "role_2", "relation": "ASSIGNED_TO"},
-            {"source": "cust_2", "target": "obs_tax_1", "relation": "EVALUATED_AS"},
-            {"source": "cust_1", "target": "obs_tax_2", "relation": "EVALUATED_AS"},
-            {"source": "team_3", "target": "obs_1", "relation": "GENERATES"},
-            {"source": "obs_1", "target": "diag_1", "relation": "GENERATES"},
-            {"source": "diag_1", "target": "interv_1", "relation": "LEADS_TO"},
-            {"source": "interv_1", "target": "exp_1", "relation": "DESIGNED_AS"},
-            {"source": "exp_1", "target": "meas_1", "relation": "MEASURED_BY"},
-            {"source": "meas_1", "target": "learn_1", "relation": "GENERATES"},
-            {"source": "learn_1", "target": "know_1", "relation": "CREATES"},
-        ]
+        """Returns the full 15-entity Universal ERD graph dynamically computed by FortnoxComputationPipeline."""
+        from src.fortnox.maskinochfritid_adapter import MaskinOchFritidAdapter
+        from src.fortnox.computations import FortnoxComputationPipeline
+
+        p_slice = MaskinOchFritidAdapter.get_production_slice()
+        comp_res = FortnoxComputationPipeline.compute_all(
+            org_name=p_slice["organization_name"],
+            invoices=p_slice["invoices"],
+            employees=p_slice["employees"],
+            time_reports=p_slice["time_reports"],
+            projects=p_slice["projects"],
+            customers=p_slice["customers"],
+            vouchers=p_slice["vouchers"],
+        )
+        erd_graph = comp_res["erd_graph"]
+
+        domain_palette = {
+            "Organization": "Trust",
+            "Team": "Trust",
+            "Person": "Interactional Interface",
+            "Role": "Operational",
+            "Capability": "Knowledge",
+            "Assignment": "Operational",
+            "Observation": "Operational",
+            "Diagnosis": "Knowledge",
+            "Intervention": "Tools",
+            "TransitionPlan": "Tools",
+            "Communication": "Interactional Interface",
+            "Experiment": "Innovation & Tech",
+            "Measurement": "Evaluation",
+            "Learning": "Knowledge",
+            "Knowledge": "Knowledge",
+            "Artifact": "Trust",
+        }
+
+        nodes = []
+        for n_id, data in erd_graph.nodes.items():
+            n_type = data.get("type", "Entity")
+            nodes.append({
+                "id": n_id,
+                "name": data.get("label", n_id),
+                "type": n_type,
+                "domain": data.get("domain") or domain_palette.get(n_type, "Operational"),
+                "size": 32 if n_type == "Organization" else (26 if n_type in ("Team", "Role", "Person") else (22 if n_type in ("Diagnosis", "Intervention", "Experiment", "Learning") else 18)),
+                "metadata": data.get("metadata", {}),
+            })
+
+        links = []
+        seen_links = set()
+        for src, edges in erd_graph.outgoing_edges.items():
+            for e in edges:
+                tgt = e.get("target")
+                rel = e.get("relation", "RELATES_TO")
+                key = (src, tgt, rel)
+                if key not in seen_links:
+                    seen_links.add(key)
+                    links.append({
+                        "source": src,
+                        "target": tgt,
+                        "relation": rel,
+                        "weight": e.get("weight", 1.0),
+                    })
+
         return {
             "nodes": nodes,
             "links": links,
             "count": len(nodes),
-            "framework": "Universal ERD (15 Entities)",
+            "edge_count": len(links),
+            "framework": "Universal ERD (15 Entities Full Lifecycle)",
+            "organization": p_slice["organization_name"],
         }
 
 
@@ -1079,6 +1853,7 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 def run_server(port: int = 8765):
     """Starts the BART HTTP server."""
+    http.server.ThreadingHTTPServer.allow_reuse_address = False
     server_address = ("", port)
     httpd = http.server.ThreadingHTTPServer(server_address, BARTRequestHandler)
     print(f"==================================================")

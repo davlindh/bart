@@ -8,6 +8,7 @@ Implements statutory verification checks under:
 """
 
 from typing import List, Dict, Any, Optional
+from ..core.types import TaxRuleType
 from .models import (
     TaxTransaction,
     MomsdeklarationReport,
@@ -97,6 +98,27 @@ class FinancialVerificationEngine:
                 )
             else:
                 checks_passed += 1
+
+            # Check for Cable Installation / Robot mower claimed under RUT
+            desc_l = (tx.description or "").lower()
+            if any(k in desc_l for k in ["kabel", "kabeldragning", "begränsningskabel", "guidekabel", "robotgräsklippare", "automower"]) and tx.current_tax_rule == TaxRuleType.RUT_DEDUCTION:
+                checks_performed += 1
+                issues.append(
+                    FinancialVerificationIssue(
+                        code="RUT_CABLE_INSTALLATION_EXCLUDED",
+                        severity="WARNING",
+                        category="RUT_COMPLIANCE",
+                        title=f"Kabelinstallation / Robotmontering ej RUT-berättigad: {tx.transaction_id}",
+                        description=(
+                            f"Transaktion '{tx.description}' innehåller kabeldragning/installation av robotgräsklippare. "
+                            f"Enligt Skatteverkets handledning för hushållsarbete (IL 67 kap.) ger nedläggning av begränsningskabel "
+                            f"eller montering av robotgräsklippare INTE rätt till RUT-avdrag. Risk för avslag och sanktionsavgift."
+                        ),
+                        affected_entity_id=tx.transaction_id,
+                        remediation_suggestion="Separera arbetskostnaden: kabeldragning debiteras med 25% moms utan RUT (BAS 3001), medan eventuellt rent trädgårdsarbete kan medges RUT (BAS 3002).",
+                        legal_basis="Inkomstskattelagen (1999:1229) 67 kap. 13-19 §§ samt Skatteverkets ställningstagande dnr 131 347493-15/111",
+                    )
+                )
 
         # ── 2. Momsdeklaration Consistency Checks ──
         if momsdeklaration:
