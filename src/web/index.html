@@ -346,6 +346,46 @@
             </div>
           </div>
 
+          <!-- Evolutionary Phase Progression Ribbon (Closed Dual Loop Progression) -->
+          <div class="evolutionary-progression-card" id="evolutionaryProgressionCard">
+            <div class="evolutionary-header">
+              <div class="evolutionary-title-group">
+                <span class="panel-dot emerald pulse-glow"></span>
+                <span class="evolutionary-title">EVOLUTIONÄR PROGRESSION</span>
+                <span class="evolutionary-phase-tag" id="currentEvolutionPhaseTag">Fas 1: W5 Finans</span>
+              </div>
+              <button id="btnAdvanceEvolutionPhase" class="btn-advance-phase" title="Avancera frigjord kapacitet till nästa tillväxtfas (W5 -> W8 -> W2 -> W4 -> W9)">
+                🚀 Nästa Fas (Advance)
+              </button>
+            </div>
+            <div class="evolutionary-ribbon" id="evolutionaryRibbon">
+              <div class="phase-chip active" data-phase="W5" id="phaseChipW5">
+                <span class="phase-num">1</span>
+                <span class="phase-txt">W5 Skatt &amp; VMB</span>
+              </div>
+              <span class="phase-arrow">➔</span>
+              <div class="phase-chip" data-phase="W8" id="phaseChipW8">
+                <span class="phase-num">2</span>
+                <span class="phase-txt">W8 IoT Innovation</span>
+              </div>
+              <span class="phase-arrow">➔</span>
+              <div class="phase-chip" data-phase="W2" id="phaseChipW2">
+                <span class="phase-num">3</span>
+                <span class="phase-txt">W2 Cirkulär Matchning</span>
+              </div>
+              <span class="phase-arrow">➔</span>
+              <div class="phase-chip" data-phase="W4" id="phaseChipW4">
+                <span class="phase-num">4</span>
+                <span class="phase-txt">W4 Flottallokering</span>
+              </div>
+              <span class="phase-arrow">➔</span>
+              <div class="phase-chip" data-phase="W9" id="phaseChipW9">
+                <span class="phase-num">5</span>
+                <span class="phase-txt">W9 Meta-Syntes</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Progressive Scope Expansion & Stop Condition Banner (Diagram 1: 5) -->
           <div class="exploration-loop-banner" id="explorationLoopBanner">
             <div class="loop-decision-indicator">
@@ -499,6 +539,15 @@
             <h2>ZON 3: SPATIAL KUNSKAPSGRAF</h2>
           </div>
           <div class="canvas-controls">
+            <button id="btnToggleConstellation" class="btn-canvas-util cyan" title="Visa 12-Agent Konstellation och levande laser-kanaler">
+              ⭐ Agent Konstellation
+            </button>
+            <button id="btnToggleRadar" class="btn-canvas-util amber" title="Holografisk 8D Context Weighting Radar">
+              📡 8D Radar
+            </button>
+            <button id="btnInjectNodeModal" class="btn-canvas-util purple" title="Expandera Kunskapsgraf med ny hypotes, regel eller experiment">
+              ➕ Expandera Graf
+            </button>
             <button id="btnToggleLayoutMode" class="btn-canvas-util" title="Växla mellan Koncentrisk Orbit (D0-D3) och Kraftstyrd graf">
               🪐 Orbit-Vy
             </button>
@@ -1260,6 +1309,82 @@
         <div style="display: flex; gap: 8px;">
           <button id="btnRun12AgentLoopFromModal" class="btn primary">⚡ Kör 12-Agent Sluten Loop Nu</button>
           <button id="btnCloseTeamDynamicsFooter" class="btn secondary">Stäng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Universal ERD Entity Injector Modal -->
+  <div class="customer-modal-overlay" id="nodeInjectorModalOverlay" style="display: none;">
+    <div class="customer-modal-container" style="max-width: 580px;">
+      <div class="customer-modal-header">
+        <div class="modal-title-group">
+          <span class="panel-dot purple pulse-glow"></span>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3>EXPANDERA KUNSKAPSGRAF (UNIVERSAL ERD)</h3>
+              <span class="badge-confidence" style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid #8b5cf6;">DYNAMIC INJECTOR</span>
+            </div>
+            <span class="modal-subtitle">Injicera ny hypotes, regel, experiment eller observation direkt i den levande grafen</span>
+          </div>
+        </div>
+        <button id="btnCloseNodeInjectorModal" class="btn-icon">✕</button>
+      </div>
+
+      <div class="injector-form-body" style="display: flex; flex-direction: column; gap: 14px; padding: 18px 0;">
+        <div class="control-item" style="flex-direction: column; align-items: stretch; gap: 6px;">
+          <label style="font-size: 0.78rem; color: var(--text-muted);">Nod-ID (Unikt ID):</label>
+          <input type="text" id="injectNodeId" class="hud-input" placeholder="t.ex. exp_battery_stress_test" />
+        </div>
+        <div class="control-item" style="flex-direction: column; align-items: stretch; gap: 6px;">
+          <label style="font-size: 0.78rem; color: var(--text-muted);">Namn / Titel:</label>
+          <input type="text" id="injectNodeName" class="hud-input" placeholder="t.ex. Batteridiagnostik &amp; Stresstest Pilot" />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="control-item" style="flex-direction: column; align-items: stretch; gap: 6px;">
+            <label style="font-size: 0.78rem; color: var(--text-muted);">Entitetstyp:</label>
+            <select id="injectNodeType" class="hud-select">
+              <option value="Experiment">🧪 Experiment (Pilot)</option>
+              <option value="Observation">👁️ Observation (Signal)</option>
+              <option value="Diagnosis">🩺 Diagnosis (Rotorsak)</option>
+              <option value="Intervention">🛠️ Intervention (Åtgärd)</option>
+              <option value="Rule">⚖️ Rule (Skatte-/Affärsregel)</option>
+              <option value="Capability">⚡ Capability (Förmåga)</option>
+              <option value="Role">🎭 Role (Roll)</option>
+              <option value="Learning">💡 Learning (Lärdom)</option>
+            </select>
+          </div>
+          <div class="control-item" style="flex-direction: column; align-items: stretch; gap: 6px;">
+            <label style="font-size: 0.78rem; color: var(--text-muted);">Funktionsdomän:</label>
+            <select id="injectNodeDomain" class="hud-select">
+              <option value="Tools">⚙️ Tools</option>
+              <option value="Knowledge">📚 Knowledge</option>
+              <option value="Operational">⚡ Operational</option>
+              <option value="Trust">🛡️ Trust</option>
+              <option value="Exchange">💳 Exchange</option>
+              <option value="Interactional Interface">🎨 Interactional</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="control-item" style="flex-direction: column; align-items: stretch; gap: 6px;">
+            <label style="font-size: 0.78rem; color: var(--text-muted);">Koppla till Nod:</label>
+            <select id="injectNodeLinkTarget" class="hud-select">
+              <option value="">(Ingen direkt länk)</option>
+            </select>
+          </div>
+          <div class="control-item" style="flex-direction: column; align-items: stretch; gap: 6px;">
+            <label style="font-size: 0.78rem; color: var(--text-muted);">Relationstyp:</label>
+            <input type="text" id="injectNodeRelation" class="hud-input" value="VALIDATES" placeholder="t.ex. VALIDATES, MONITORS" />
+          </div>
+        </div>
+      </div>
+
+      <div class="customer-modal-footer" style="padding-top: 14px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.75rem; color: var(--text-dim);">Noden simuleras organiskt i HTML5 Spatial Canvas</span>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnConfirmInjectNode" class="btn primary">🚀 Injicera i Grafen</button>
+          <button id="btnCancelInjectNode" class="btn secondary">Avbryt</button>
         </div>
       </div>
     </div>

@@ -22,6 +22,10 @@ Samtliga agenter och utvecklare som opererar i detta workspace lyder under följ
 
 För fullständig regeldefinition, se [`.agents/rules/omnipod-invariants.md`](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/.agents/rules/omnipod-invariants.md).
 
-## Tillgängliga Skills
+## Tillgängliga Skills & Masterreferenser
 - [`omnipod-team-optimizer`](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/.agents/skills/omnipod-team-optimizer/SKILL.md): 5-stegs dynamisk kontextupplösning, orkestrering av 12-agentsteamet, experiment och meta-learning.
+  - [Samtliga Roller, Agenter & Personas](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/.agents/skills/omnipod-team-optimizer/references/roles_and_personas_reference.md)
+  - [Samtliga Modeller, Kontrakt & ERD-Entiteter](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/.agents/skills/omnipod-team-optimizer/references/models_and_contracts_reference.md)
+  - [Samtliga 7 Avsedda Arbetsflöden (Canonical Workflows)](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/.agents/skills/omnipod-team-optimizer/references/workflows_and_runbooks_reference.md)
 - [`contextual-precognition`](file:///c:/Users/info/OneDrive/Dokument/GitHub/bart/.agents/skills/contextual-precognition/SKILL.md): Trajektorieprojektion, förebyggande friktionsskydd och SQLite WAL-persistens.
+

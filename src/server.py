@@ -376,6 +376,8 @@ PROPOSED_VOUCHERS: List[Dict[str, Any]] = [
 ]
 
 GLOBAL_AGENT = TaxOptimizationAgent()
+SESSION_CUSTOM_NODES: List[Dict[str, Any]] = []
+SESSION_CUSTOM_LINKS: List[Dict[str, Any]] = []
 
 
 class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -624,6 +626,24 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
                 }
             }
             self._send_json(layers_data)
+            return
+
+        if path == "/api/agents/constellation":
+            constellation_data = [
+                {"id": "ObserverAgent", "name": "1. ObserverAgent", "order": 1, "stage": "5.1", "label": "Observera", "domain": "Operational", "color": "#06b6d4", "focus": "Signalinsamling & Nulägesbild", "next": "DiagnosticianAgent"},
+                {"id": "DiagnosticianAgent", "name": "2. DiagnosticianAgent", "order": 2, "stage": "5.2", "label": "Diagnostisera", "domain": "Knowledge", "color": "#8b5cf6", "focus": "Rotorsaker & Hypoteser", "next": "TeamArchitectAgent"},
+                {"id": "TeamArchitectAgent", "name": "3. TeamArchitectAgent", "order": 3, "stage": "5.3", "label": "Architect", "domain": "Trust", "color": "#10b981", "focus": "Rollmandat & Struktur", "next": "RoleTransitionAgent"},
+                {"id": "RoleTransitionAgent", "name": "4. RoleTransitionAgent", "order": 4, "stage": "5.4", "label": "Transition", "domain": "Tools", "color": "#38bdf8", "focus": "Övergångsplaner & VMB-skifte", "next": "CollaborationAgent"},
+                {"id": "CollaborationAgent", "name": "5. CollaborationAgent", "order": 5, "stage": "5.4", "label": "Samarbete", "domain": "Interactional", "color": "#ec4899", "focus": "Handoffs & Gränssnitt", "next": "WellbeingAgent"},
+                {"id": "WellbeingAgent", "name": "6. WellbeingAgent", "order": 6, "stage": "5.4", "label": "Hälsa", "domain": "Trust", "color": "#10b981", "focus": "Kognitiv Belastning & Balans", "next": "AIEthicsAgent"},
+                {"id": "AIEthicsAgent", "name": "7. AIEthicsAgent", "order": 7, "stage": "5.4", "label": "Etik & HITL", "domain": "Trust", "color": "#10b981", "focus": "Guardrails & Transparens", "next": "ExperimentAgent"},
+                {"id": "ExperimentAgent", "name": "8. ExperimentAgent", "order": 8, "stage": "5.5", "label": "Experiment", "domain": "Tools", "color": "#f59e0b", "focus": "A/B-Piloter & Sandlåda", "next": "MeasurementAgent"},
+                {"id": "MeasurementAgent", "name": "9. MeasurementAgent", "order": 9, "stage": "5.5", "label": "Mät & Utvärdera", "domain": "Evaluation", "color": "#06b6d4", "focus": "KPI:er & Effektstorlek", "next": "LearningAgent"},
+                {"id": "LearningAgent", "name": "10. LearningAgent", "order": 10, "stage": "5.6", "label": "Lär & Anpassa", "domain": "Knowledge", "color": "#8b5cf6", "focus": "Lärdomar & Heuristikregler", "next": "OrchestratorAgent"},
+                {"id": "OrchestratorAgent", "name": "11. OrchestratorAgent", "order": 11, "stage": "5.6", "label": "Orkestrera", "domain": "Operational", "color": "#06b6d4", "focus": "Kapacitetsallokering & Faser", "next": "MetaLearningAgent"},
+                {"id": "MetaLearningAgent", "name": "12. MetaLearningAgent", "order": 12, "stage": "5.6", "label": "Meta-Lärande", "domain": "Knowledge", "color": "#8b5cf6", "focus": "Systemkalibrering & Meta-Loop", "next": "ObserverAgent"},
+            ]
+            self._send_json({"constellation": constellation_data, "count": 12})
             return
 
         if path == "/api/context/presentation":
@@ -1148,6 +1168,74 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json(res)
             return
 
+        if path == "/api/orchestrator/phase/advance":
+            from src.agents.orchestrator import OrchestratorAgent
+            from src.core.types import PerspectiveWindow
+            current_window_val = payload.get("current_window", "W5")
+            current_win = PerspectiveWindow.W5_FINANCIAL_MANAGEMENT
+            for w in PerspectiveWindow:
+                if w.name.startswith(current_window_val) or w.value == current_window_val:
+                    current_win = w
+                    break
+
+            prev_outcome = payload.get("previous_outcome", {
+                "freed_capacity_pct": 25.0,
+                "freed_capacity_sek": 18800.0,
+                "current_status": "CONVERGED_STABLE",
+            })
+            next_phase = OrchestratorAgent.generate_next_evolutionary_phase(current_win, prev_outcome)
+            if "observations" in next_phase:
+                next_phase["observations"] = [
+                    obs.model_dump() if hasattr(obs, "model_dump") else obs
+                    for obs in next_phase["observations"]
+                ]
+            if "window" in next_phase and hasattr(next_phase["window"], "value"):
+                next_phase["window_id"] = next_phase["window"].name.split("_")[0]
+                next_phase["window_name"] = next_phase["window"].value
+            self._send_json(next_phase)
+            return
+
+        if path == "/api/erd/node/create":
+            node_id = payload.get("id") or f"custom_{len(SESSION_CUSTOM_NODES)+1}"
+            name = payload.get("name", node_id)
+            node_type = payload.get("type", "Experiment")
+            domain = payload.get("domain", "Tools")
+            metadata = payload.get("metadata", {})
+            linked_to = payload.get("linked_to")
+            relation = payload.get("relation", "RELATES_TO")
+
+            new_node = {
+                "id": node_id,
+                "name": name,
+                "type": node_type,
+                "domain": domain,
+                "size": 24,
+                "metadata": metadata,
+            }
+            existing_idx = next((i for i, n in enumerate(SESSION_CUSTOM_NODES) if n["id"] == node_id), None)
+            if existing_idx is not None:
+                SESSION_CUSTOM_NODES[existing_idx] = new_node
+            else:
+                SESSION_CUSTOM_NODES.append(new_node)
+
+            new_link = None
+            if linked_to:
+                new_link = {
+                    "source": node_id,
+                    "target": linked_to,
+                    "relation": relation,
+                    "weight": 1.0,
+                }
+                SESSION_CUSTOM_LINKS.append(new_link)
+
+            self._send_json({
+                "success": True,
+                "node": new_node,
+                "link": new_link,
+                "total_custom_nodes": len(SESSION_CUSTOM_NODES),
+            })
+            return
+
         self._send_json({"error": "Endpoint not found"}, status=404)
 
     def _get_window_data(self, window_id: str) -> Dict[str, Any]:
@@ -1643,6 +1731,13 @@ class BARTRequestHandler(http.server.SimpleHTTPRequestHandler):
                         "relation": rel,
                         "weight": e.get("weight", 1.0),
                     })
+
+        # Append session custom nodes & links
+        for cn in SESSION_CUSTOM_NODES:
+            if not any(n["id"] == cn["id"] for n in nodes):
+                nodes.append(cn)
+        for cl in SESSION_CUSTOM_LINKS:
+            links.append(cl)
 
         return {
             "nodes": nodes,

@@ -234,6 +234,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewBookedVouchers         = document.getElementById('viewBookedVouchers');
   const proposedVouchersList       = document.getElementById('proposedVouchersList');
 
+  // ─── Constellation, Radar & Node Injector Elements ─────────────────────────
+  const btnToggleConstellation     = document.getElementById('btnToggleConstellation');
+  const btnToggleRadar             = document.getElementById('btnToggleRadar');
+  const btnInjectNodeModal         = document.getElementById('btnInjectNodeModal');
+  const nodeInjectorModalOverlay   = document.getElementById('nodeInjectorModalOverlay');
+  const btnCloseNodeInjectorModal  = document.getElementById('btnCloseNodeInjectorModal');
+  const btnCancelInjectNode        = document.getElementById('btnCancelInjectNode');
+  const btnConfirmInjectNode       = document.getElementById('btnConfirmInjectNode');
+  const injectNodeId               = document.getElementById('injectNodeId');
+  const injectNodeName             = document.getElementById('injectNodeName');
+  const injectNodeType             = document.getElementById('injectNodeType');
+  const injectNodeDomain           = document.getElementById('injectNodeDomain');
+  const injectNodeLinkTarget       = document.getElementById('injectNodeLinkTarget');
+  const injectNodeRelation         = document.getElementById('injectNodeRelation');
+
+  const btnAdvanceEvolutionPhase   = document.getElementById('btnAdvanceEvolutionPhase');
+  const currentEvolutionPhaseTag   = document.getElementById('currentEvolutionPhaseTag');
+  const evolutionaryRibbon         = document.getElementById('evolutionaryRibbon');
+
   let selectedInspectorNode = null;
 
   function openNodeInspector(node) {
@@ -443,6 +462,196 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ─── 12-Agent Constellation & 8D Radar Toggles ───────────────────────────
+  if (btnToggleConstellation) {
+    btnToggleConstellation.addEventListener('click', () => {
+      const active = canvas.toggleConstellation();
+      btnToggleConstellation.classList.toggle('active', active);
+      playSound('constellation');
+      Toast.info(active ? '⭐ 12-Agent Orbital Konstellation: Aktiv' : '⭐ 12-Agent Orbital Konstellation: Dold');
+    });
+  }
+
+  if (btnToggleRadar) {
+    btnToggleRadar.addEventListener('click', () => {
+      const active = canvas.toggleRadarOverlay();
+      btnToggleRadar.classList.toggle('active', active);
+      playSound('click');
+      Toast.info(active ? '📡 8D Context Radar: Synlig' : '📡 8D Context Radar: Dold');
+    });
+  }
+
+  // ─── Universal ERD Node Injector Modal ──────────────────────────────────
+  function openNodeInjectorModal() {
+    if (!nodeInjectorModalOverlay) return;
+    if (injectNodeId) injectNodeId.value = `node_${Date.now().toString().slice(-4)}`;
+    if (injectNodeName) injectNodeName.value = '';
+    if (injectNodeLinkTarget) {
+      injectNodeLinkTarget.innerHTML = '<option value="">(Ingen direkt länk)</option>';
+      canvas.nodes.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n.id;
+        opt.textContent = `${n.id} (${n.name || n.type})`;
+        if (n.id === canvas.selectedNodeId) opt.selected = true;
+        injectNodeLinkTarget.appendChild(opt);
+      });
+    }
+    nodeInjectorModalOverlay.style.display = 'flex';
+    playSound('click');
+  }
+
+  function closeNodeInjectorModal() {
+    if (nodeInjectorModalOverlay) nodeInjectorModalOverlay.style.display = 'none';
+  }
+
+  if (btnInjectNodeModal) {
+    btnInjectNodeModal.addEventListener('click', openNodeInjectorModal);
+  }
+  if (btnCloseNodeInjectorModal) {
+    btnCloseNodeInjectorModal.addEventListener('click', closeNodeInjectorModal);
+  }
+  if (btnCancelInjectNode) {
+    btnCancelInjectNode.addEventListener('click', closeNodeInjectorModal);
+  }
+
+  if (btnConfirmInjectNode) {
+    btnConfirmInjectNode.addEventListener('click', async () => {
+      const nId = (injectNodeId && injectNodeId.value.trim()) || `node_${Date.now()}`;
+      const nName = (injectNodeName && injectNodeName.value.trim()) || nId;
+      const nType = (injectNodeType && injectNodeType.value) || 'Experiment';
+      const nDomain = (injectNodeDomain && injectNodeDomain.value) || 'Tools';
+      const targetId = (injectNodeLinkTarget && injectNodeLinkTarget.value) || null;
+      const rel = (injectNodeRelation && injectNodeRelation.value.trim()) || 'VALIDATES';
+
+      try {
+        const res = await fetch('/api/erd/node/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: nId,
+            name: nName,
+            type: nType,
+            domain: nDomain,
+            linked_to: targetId,
+            relation: rel,
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          canvas.addCustomNode(data.node, data.link);
+          closeNodeInjectorModal();
+          playSound('success');
+          Toast.success(`🚀 Nod "${nName}" (${nType}) injicerad i kunskapsgrafen!`);
+        }
+      } catch (err) {
+        console.error('Inject node error:', err);
+        canvas.addCustomNode(
+          { id: nId, name: nName, type: nType, domain: nDomain },
+          targetId ? { source: nId, target: targetId, relation: rel } : null
+        );
+        closeNodeInjectorModal();
+        Toast.success(`🚀 Nod "${nName}" injicerad lokalt!`);
+      }
+    });
+  }
+
+  // ─── Evolutionary Progression Ribbon Engine (Closed Dual Loop) ───────────
+  const evolutionPhases = [
+    { window: 'W5', label: 'Fas 1: W5 Finans & VMB', focalId: 'TX-1001', role: 'CFO' },
+    { window: 'W8', label: 'Fas 2: W8 IoT Innovation', focalId: 'exp:iot_battery_diagnostics', role: 'Verkstadschef' },
+    { window: 'W2', label: 'Fas 3: W2 Cirkulär Matchning', focalId: 'offering:circular_robot_subscription', role: 'Säljare' },
+    { window: 'W4', label: 'Fas 4: W4 Flottallokering', focalId: 'alloc:field_fleet_expansion', role: 'Verkstadschef' },
+    { window: 'W9', label: 'Fas 5: W9 Meta-Syntes', focalId: 'learning:meta_loop_reinforcement', role: 'Revisor' }
+  ];
+  let currentEvolutionIdx = 0;
+
+  function updateEvolutionaryRibbonUI(idx) {
+    currentEvolutionIdx = idx;
+    const p = evolutionPhases[idx];
+    if (currentEvolutionPhaseTag) {
+      currentEvolutionPhaseTag.textContent = p.label;
+    }
+    document.querySelectorAll('.phase-chip').forEach((chip, i) => {
+      chip.classList.toggle('active', i === idx);
+    });
+  }
+
+  async function advanceEvolutionaryPhase() {
+    const nextIdx = (currentEvolutionIdx + 1) % evolutionPhases.length;
+    const targetPhase = evolutionPhases[nextIdx];
+    try {
+      const res = await fetch('/api/orchestrator/phase/advance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_window: state.currentWindow,
+          current_role: state.currentRole,
+          previous_outcome: {
+            freed_capacity_pct: 28.5,
+            freed_capacity_sek: 18800.0,
+            current_status: 'CONVERGED_STABLE'
+          }
+        })
+      });
+      const data = await res.json();
+      updateEvolutionaryRibbonUI(nextIdx);
+
+      // Trigger evolutionary audio chord
+      playSound('evolution');
+
+      // Switch to new window
+      const winId = data.window_id || targetPhase.window;
+      await switchWindow(winId);
+
+      // Set active role if returned
+      if (data.role && roleSelect) {
+        state.currentRole = data.role;
+        roleSelect.value = data.role;
+      }
+
+      // Add target entity to graph if not present and pivot
+      const targetId = data.target_node_id || targetPhase.focalId;
+      if (data.target_entity && !canvas.getNode(targetId)) {
+        canvas.addCustomNode({
+          id: targetId,
+          name: data.target_entity.name || targetId,
+          type: data.target_entity.type || 'InnovationInitiative',
+          domain: data.target_entity.domain || 'Tools'
+        }, {
+          source: targetId,
+          target: state.selectedTxId || 'TX-1001',
+          relation: 'EXPANDS_INTO'
+        });
+      }
+
+      canvas.pivotTo(targetId);
+      canvas.addResonanceShockwave(canvas.width / 2, canvas.height / 2, '#10b981');
+      Toast.success(`🚀 Evolutionär Framskridning: ${data.phase_id || targetPhase.label} aktiverad!`, 5000);
+    } catch (err) {
+      console.error('Phase advance error:', err);
+      updateEvolutionaryRibbonUI(nextIdx);
+      await switchWindow(targetPhase.window);
+      canvas.pivotTo(targetPhase.focalId);
+      playSound('evolution');
+      Toast.success(`🚀 Evolutionär Framskridning till ${targetPhase.label}!`);
+    }
+  }
+
+  if (btnAdvanceEvolutionPhase) {
+    btnAdvanceEvolutionPhase.addEventListener('click', advanceEvolutionaryPhase);
+  }
+
+  document.querySelectorAll('.phase-chip').forEach((chip, i) => {
+    chip.addEventListener('click', async () => {
+      updateEvolutionaryRibbonUI(i);
+      const p = evolutionPhases[i];
+      await switchWindow(p.window);
+      if (p.focalId) canvas.pivotTo(p.focalId);
+      playSound('click');
+      Toast.info(`Bytte till ${p.label}`);
+    });
+  });
+
   // ─── Zero-Dependency Web Audio Synthesizer ──────────────────────────────────
   const audioState = {
     enabled: localStorage.getItem('bart_sound_enabled') !== 'false',
@@ -516,6 +725,44 @@ document.addEventListener('DOMContentLoaded', () => {
           osc.start(now + idx * 0.1);
           osc.stop(now + idx * 0.1 + 0.09);
         });
+      } else if (type === 'evolution') {
+        [440, 554.37, 659.25, 880, 1108.73, 1318.51].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+          gain.gain.setValueAtTime(0.04, now + idx * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.05);
+          osc.stop(now + idx * 0.05 + 0.36);
+        });
+      } else if (type === 'constellation') {
+        [659.25, 830.61, 987.77].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.035, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.26);
+        });
+      } else if (type === 'shockwave') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.18);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.linearRampToValueAtTime(0.001, now + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.19);
       }
     } catch (e) {
       // Audio autoplay policy
@@ -1457,6 +1704,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function advanceAgentStep(nextStep) {
     setStep(nextStep);
+    if (canvas && canvas.setActiveAgent) {
+      canvas.setActiveAgent(state.currentAgent);
+    }
     try {
       const stepNames = ['observe', 'analyze', 'identify', 'propose', 'act', 'evaluate'];
       const stepName = stepNames[nextStep - 1];

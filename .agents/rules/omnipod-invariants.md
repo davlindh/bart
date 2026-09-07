@@ -55,3 +55,15 @@ Ett konvergerat systemtillstånd får aldrig innebära att agentprocessen avstan
 - **Kanonisk Utvecklingstrajektoria över Perspektivfönstren**:
   $$\text{W5/W6 (Stabilitet)} \longrightarrow \text{W8 (Innovation & Pilot)} \longrightarrow \text{W2 (Matchning & Kommersialisering)} \longrightarrow \text{W4 (Resursskalning)} \longrightarrow \text{W9 (Adaptiv Konvergens)} \longrightarrow \text{Cykel } N+1$$
 - **Evig Självförnyelse**: När en fullständig omgång av perspektivfönster genomlöpts genereras en ny generation ($N+1$) med djupare prediktiv horisont, maskintelemetri och autonom ekosystemutveckling.
+
+## 6. Den Arkitektoniska Ontologin (De 8 Dimensionerna)
+Samtliga komponenter, klasser och processer i repot ska strikt placeras i rätt dimension för att undvika överlapp och begreppsförvirring:
+1. **Windows (Perspektiv)**: *Vad tittar vi genom?* (W1 Kontextualisering till W9 Adaptiva Insikter).
+2. **Domains (Verklighetsområden)**: *Vad handlar informationen om?* (Trust, Knowledge, Tools, Exchange, Interactional, Operational).
+3. **Roles (Aktörer)**: *Vem utför eller tolkar?* (12 Optimeringsagenter, 8 Specialister, 11 Personas).
+4. **Functions (Metoder)**: *Vad ska göras med informationen?* (Livscykelns 6 funktioner: `observe` till `evaluate`).
+5. **Context Layer (Utsnitt)**: *Vad är relevant just nu?* (`DynamicContextResolver`, `ContextPacket`, Scope $D_0-D_3$).
+6. **Information Graph (Kunskap)**: *Vad vet systemet?* (Universal ERD, 15 entitetstyper, noder och typade relationer).
+7. **Orchestration Layer (Styrning)**: *Vad händer härnäst?* (`OrchestratorAgent`, avsikt, färdighetsdispatch).
+8. **Learning Layer (Evolution)**: *Vad förändras efteråt?* (`LearningAgent`, `MetaLearningAgent`, uppdaterade 8D-vikter och regler).
+

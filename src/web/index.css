@@ -4135,6 +4135,172 @@ kbd {
   pointer-events: none;
 }
 
+/* ==========================================================================
+   EVOLUTIONARY PHASE PROGRESSION & HIGH-IMPACT VISUAL HUD EFFECTS
+   ========================================================================== */
+
+.evolutionary-progression-card {
+  margin-top: 10px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  border-radius: 8px;
+  padding: 10px 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(16, 185, 129, 0.06);
+}
+
+.evolutionary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.evolutionary-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.evolutionary-title {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-emerald);
+  text-transform: uppercase;
+}
+
+.evolutionary-phase-tag {
+  font-size: 0.70rem;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  padding: 2px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.02em;
+}
+
+.btn-advance-phase {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+  color: #ffffff;
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-advance-phase:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.6);
+  border-color: #6ee7b7;
+}
+
+.btn-advance-phase:active {
+  transform: translateY(1px);
+}
+
+.evolutionary-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 0;
+}
+.evolutionary-ribbon::-webkit-scrollbar { display: none; }
+
+.phase-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.phase-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(6, 182, 212, 0.3);
+  color: var(--text-main);
+}
+
+.phase-chip.active {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+  border-color: var(--accent-cyan);
+  color: #f8fafc;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.35);
+}
+
+.phase-chip.active .phase-num {
+  background: var(--accent-cyan);
+  color: #070a12;
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+.phase-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-main);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.phase-arrow {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  user-select: none;
+}
+
+/* Canvas Action Button Accents */
+.btn-canvas-util.cyan {
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #38bdf8;
+}
+.btn-canvas-util.cyan:hover, .btn-canvas-util.cyan.active {
+  background: rgba(6, 182, 212, 0.2);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+}
+
+.btn-canvas-util.amber {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+.btn-canvas-util.amber:hover, .btn-canvas-util.amber.active {
+  background: rgba(245, 158, 11, 0.2);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+}
+
+.btn-canvas-util.purple {
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #c084fc;
+}
+.btn-canvas-util.purple:hover, .btn-canvas-util.purple.active {
+  background: rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
 
 
 

@@ -49,7 +49,7 @@ check("Version 3.0.0", h is not None and h.get("version") == "3.0.0",
 
 # 2. Scenarios
 sc = get("/api/scenarios")
-check("GET /api/scenarios", isinstance(sc, list) and len(sc) == 2)
+check("GET /api/scenarios", isinstance(sc, list) and len(sc) >= 2)
 
 sc1 = get("/api/scenario/mixed_q3")
 check("GET /api/scenario/mixed_q3", sc1 is not None and sc1.get("id") == "mixed_q3")

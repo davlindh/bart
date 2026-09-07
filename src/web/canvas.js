@@ -102,6 +102,44 @@ class SpatialCanvas {
     // Visual FX: Particle glow & ripple waves
     this.particles = [];
     this.rippleWaves = [];
+    this.resonanceRipples = [];
+
+    // Live Edge Energy Streams (Flowing Photon Beads)
+    this.edgePhotonPhase = 0;
+
+    // 12-Agent Orbital Constellation HUD
+    this.constellationActive = false;
+    this.activeAgentId = 'TaxOptimizationAgent';
+    this.constellationPhase = 0;
+    this.constellationAgents = [
+      { id: 'ObserverAgent', name: '1. ObserverAgent', stage: '5.1', glyph: '👁️', domain: 'Operational', color: '#06b6d4' },
+      { id: 'DiagnosticianAgent', name: '2. DiagnosticianAgent', stage: '5.2', glyph: '🩺', domain: 'Knowledge', color: '#8b5cf6' },
+      { id: 'TeamArchitectAgent', name: '3. TeamArchitectAgent', stage: '5.3', glyph: '🏛️', domain: 'Trust', color: '#10b981' },
+      { id: 'RoleTransitionAgent', name: '4. RoleTransitionAgent', stage: '5.4', glyph: '🔄', domain: 'Tools', color: '#38bdf8' },
+      { id: 'CollaborationAgent', name: '5. CollaborationAgent', stage: '5.4', glyph: '🤝', domain: 'Interactional', color: '#ec4899' },
+      { id: 'WellbeingAgent', name: '6. WellbeingAgent', stage: '5.4', glyph: '🌱', domain: 'Trust', color: '#10b981' },
+      { id: 'AIEthicsAgent', name: '7. AIEthicsAgent', stage: '5.4', glyph: '⚖️', domain: 'Trust', color: '#10b981' },
+      { id: 'ExperimentAgent', name: '8. ExperimentAgent', stage: '5.5', glyph: '🧪', domain: 'Tools', color: '#f59e0b' },
+      { id: 'MeasurementAgent', name: '9. MeasurementAgent', stage: '5.5', glyph: '📏', domain: 'Evaluation', color: '#06b6d4' },
+      { id: 'LearningAgent', name: '10. LearningAgent', stage: '5.6', glyph: '💡', domain: 'Knowledge', color: '#8b5cf6' },
+      { id: 'OrchestratorAgent', name: '11. OrchestratorAgent', stage: '5.6', glyph: '⚡', domain: 'Operational', color: '#06b6d4' },
+      { id: 'MetaLearningAgent', name: '12. MetaLearningAgent', stage: '5.6', glyph: '🧠', domain: 'Knowledge', color: '#8b5cf6' },
+    ];
+
+    // 8D Weighting Radar Holographic Overlay
+    this.radarOverlayActive = false;
+    this.radarWeights = {
+      Temporal: 0.85,
+      Spatial: 0.70,
+      Relational: 0.95,
+      Statutory: 0.98,
+      Financial: 0.92,
+      Operational: 0.88,
+      Cognitive: 0.75,
+      Evolutionary: 0.90
+    };
+    this.radarEntropy = 0.18;
+    this.radarConfidence = 0.94;
 
     // Universal ERD Category Filter & Causal Path Tracer
     this.activeCategory = 'ALL';
@@ -320,6 +358,85 @@ class SpatialCanvas {
     if (this.particles.length > 60) this.particles.splice(0, this.particles.length - 60);
   }
 
+  addResonanceShockwave(x, y, color = '#06b6d4') {
+    this.resonanceRipples.push({
+      x,
+      y,
+      r1: 8,
+      r2: 4,
+      r3: 2,
+      alpha: 1.0,
+      color: color || '#06b6d4'
+    });
+    if (this.resonanceRipples.length > 5) this.resonanceRipples.shift();
+  }
+
+  toggleConstellation() {
+    this.constellationActive = !this.constellationActive;
+    return this.constellationActive;
+  }
+
+  setConstellation(active) {
+    this.constellationActive = !!active;
+  }
+
+  setActiveAgent(agentId) {
+    this.activeAgentId = agentId;
+  }
+
+  toggleRadarOverlay() {
+    this.radarOverlayActive = !this.radarOverlayActive;
+    return this.radarOverlayActive;
+  }
+
+  setRadarOverlay(active) {
+    this.radarOverlayActive = !!active;
+  }
+
+  setRadarWeights(weights, entropy, confidence) {
+    if (weights) this.radarWeights = { ...this.radarWeights, ...weights };
+    if (entropy !== undefined) this.radarEntropy = entropy;
+    if (confidence !== undefined) this.radarConfidence = confidence;
+  }
+
+  addCustomNode(nodeData, linkData = null) {
+    const existing = this.getNode(nodeData.id);
+    if (!existing) {
+      const centerX = this.width / 2;
+      const centerY = this.height / 2;
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 130 + Math.random() * 90;
+      const newNode = {
+        ...nodeData,
+        x: centerX + Math.cos(angle) * radius,
+        y: centerY + Math.sin(angle) * radius,
+        vx: 0,
+        vy: 0,
+        radius: nodeData.size ? nodeData.size / 2 : 14,
+        color: this.domainColors[nodeData.domain] || this.domainColors['Default']
+      };
+      this.nodes.push(newNode);
+      this.addResonanceShockwave(newNode.x, newNode.y, newNode.color);
+      this.spawnParticles(newNode.x, newNode.y, newNode.color, 14);
+    }
+    if (linkData && linkData.source && linkData.target) {
+      const exists = this.links.some(l => 
+        (l.source === linkData.source && l.target === linkData.target) ||
+        (l.source === linkData.target && l.target === linkData.source)
+      );
+      if (!exists) {
+        this.links.push({
+          source: linkData.source,
+          target: linkData.target,
+          relation: linkData.relation || 'RELATES_TO',
+          strength: linkData.strength || 1.0
+        });
+      }
+    }
+    this.selectedNodeId = nodeData.id;
+    this._animatePivotToNode(nodeData.id);
+  }
+
   traceCausalPath(startId, endId) {
     this.tracedPathNodes.clear();
     this.tracedPathLinks.clear();
@@ -473,6 +590,7 @@ class SpatialCanvas {
       const node = this.getNode(hit);
       if (node) {
         this.addRipple(node.x, node.y, node.color);
+        this.addResonanceShockwave(node.x, node.y, node.color);
         this.spawnParticles(node.x, node.y, node.color, 8);
       }
       if (this.onNodeClickCallback) this.onNodeClickCallback(node);
@@ -655,6 +773,8 @@ class SpatialCanvas {
 
     // Advance ring phase for pulsing animation
     this.ringPhase += 0.04;
+    this.edgePhotonPhase += 0.015;
+    this.constellationPhase += 0.007;
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -666,6 +786,32 @@ class SpatialCanvas {
     ctx.save();
     ctx.translate(this.viewport.x, this.viewport.y);
     ctx.scale(this.viewport.scale, this.viewport.scale);
+
+    // ── Domain Glow Nebulae (Ambient Cluster Atmosphere) ──
+    const domainClusters = {};
+    this.nodes.forEach(n => {
+      const d = n.domain || 'Operational';
+      if (!domainClusters[d]) domainClusters[d] = { x: 0, y: 0, count: 0, color: this.domainColors[d] || '#06b6d4' };
+      domainClusters[d].x += n.x;
+      domainClusters[d].y += n.y;
+      domainClusters[d].count++;
+    });
+    Object.values(domainClusters).forEach(cl => {
+      if (cl.count < 1) return;
+      const cx = cl.x / cl.count;
+      const cy = cl.y / cl.count;
+      const radius = Math.max(65, Math.min(220, cl.count * 28));
+      const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, radius);
+      grad.addColorStop(0, cl.color + '26');
+      grad.addColorStop(0.6, cl.color + '0a');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.restore();
+    });
 
     // ── Concentric Orbit Rings (D0-D3) ──
     if (this.layoutMode === 'orbit') {
@@ -753,8 +899,8 @@ class SpatialCanvas {
       });
     }
 
-    // Draw Links
-    this.links.forEach(l => {
+    // Draw Links & Flowing Energy Streams
+    this.links.forEach((l, idx) => {
       const s = this.getNode(l.source);
       const t = this.getNode(l.target);
       if (!s || !t) return;
@@ -763,9 +909,49 @@ class SpatialCanvas {
       ctx.beginPath();
       ctx.moveTo(s.x, s.y);
       ctx.lineTo(t.x, t.y);
-      ctx.strokeStyle = isHighlight ? 'rgba(6,182,212,0.5)' : 'rgba(255,255,255,0.07)';
-      ctx.lineWidth = isHighlight ? 1.5 / this.viewport.scale : 1 / this.viewport.scale;
+      ctx.strokeStyle = isHighlight ? 'rgba(6,182,212,0.6)' : 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = isHighlight ? 1.8 / this.viewport.scale : 1 / this.viewport.scale;
       ctx.stroke();
+
+      // ── Flowing Photon Energy Beads along edge ──
+      const relUpper = (l.relation || '').toUpperCase();
+      let streamColor = '#38bdf8';
+      let photonGlow = '#06b6d4';
+      if (relUpper.includes('VMB') || relUpper.includes('MOMS') || relUpper.includes('TAX') || relUpper.includes('VOUCHER') || relUpper.includes('MARGIN')) {
+        streamColor = '#f59e0b';
+        photonGlow = '#fbbf24';
+      } else if (relUpper.includes('LEARN') || relUpper.includes('DIAGNOS') || relUpper.includes('HEURISTIC') || relUpper.includes('INSIGHT')) {
+        streamColor = '#c084fc';
+        photonGlow = '#a855f7';
+      } else if (relUpper.includes('TRUST') || relUpper.includes('AUDIT') || relUpper.includes('VERIF')) {
+        streamColor = '#34d399';
+        photonGlow = '#10b981';
+      }
+
+      // Moving photon beads (two phases)
+      const beadSpeed = 0.8;
+      const t1 = ((this.edgePhotonPhase * beadSpeed + (idx * 0.23)) % 1.0);
+      const px1 = s.x + (t.x - s.x) * t1;
+      const py1 = s.y + (t.y - s.y) * t1;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(px1, py1, (isHighlight ? 3.0 : 2.0) / this.viewport.scale, 0, Math.PI * 2);
+      ctx.fillStyle = streamColor;
+      ctx.shadowColor = photonGlow;
+      ctx.shadowBlur = (isHighlight ? 10 : 6) / this.viewport.scale;
+      ctx.fill();
+
+      if (isHighlight) {
+        const t2 = (t1 + 0.5) % 1.0;
+        const px2 = s.x + (t.x - s.x) * t2;
+        const py2 = s.y + (t.y - s.y) * t2;
+        ctx.beginPath();
+        ctx.arc(px2, py2, 2.2 / this.viewport.scale, 0, Math.PI * 2);
+        ctx.fillStyle = streamColor;
+        ctx.fill();
+      }
+      ctx.restore();
 
       if (l.relation && (isHighlight || this.viewport.scale >= 0.75)) {
         const midX = (s.x + t.x) / 2;
@@ -1047,10 +1233,248 @@ class SpatialCanvas {
       }
     }
 
+    // ── Multi-Frequency Resonance Ripples ──
+    this.resonanceRipples.forEach(res => {
+      ctx.save();
+      const rScale = 1 / this.viewport.scale;
+      ctx.beginPath();
+      ctx.arc(res.x, res.y, res.r1, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(6, 182, 212, ${res.alpha * 0.8})`;
+      ctx.lineWidth = 2.2 * rScale;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(res.x, res.y, res.r2, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(139, 92, 246, ${res.alpha * 0.6})`;
+      ctx.lineWidth = 1.6 * rScale;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(res.x, res.y, res.r3, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(16, 185, 129, ${res.alpha * 0.5})`;
+      ctx.lineWidth = 1.0 * rScale;
+      ctx.stroke();
+      ctx.restore();
+
+      res.r1 += 3.0;
+      res.r2 += 2.2;
+      res.r3 += 1.4;
+      res.alpha -= 0.024;
+    });
+    this.resonanceRipples = this.resonanceRipples.filter(r => r.alpha > 0);
+
+    // ── 12-Agent Orbital Constellation HUD ──
+    if (this.constellationActive) {
+      const centerX = this.width / 2;
+      const centerY = this.height / 2;
+      const orbitR = 480;
+      const agentCount = this.constellationAgents.length;
+
+      // Outer Constellation Guideway
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, orbitR, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(6, 182, 212, 0.22)';
+      ctx.lineWidth = 1.8 / this.viewport.scale;
+      ctx.setLineDash([8 / this.viewport.scale, 8 / this.viewport.scale]);
+      ctx.stroke();
+
+      // Title
+      ctx.font = `700 ${10 / this.viewport.scale}px "Outfit", sans-serif`;
+      ctx.fillStyle = 'rgba(6, 182, 212, 0.85)';
+      ctx.textAlign = 'center';
+      ctx.fillText('⚡ OMNIPOD 12-AGENT ORBITAL CONSTELLATION HUD', centerX, centerY - orbitR - 14 / this.viewport.scale);
+
+      let focalNode = this.getNode(this.selectedNodeId) || this.nodes[0] || { x: centerX, y: centerY };
+
+      this.constellationAgents.forEach((ag, i) => {
+        const angle = (i / agentCount) * Math.PI * 2 + this.constellationPhase;
+        const ax = centerX + Math.cos(angle) * orbitR;
+        const ay = centerY + Math.sin(angle) * orbitR;
+        const isActive = (ag.id === this.activeAgentId || (this.activeAgentId === 'TaxOptimizationAgent' && i === 0));
+
+        // Handoff Conduit
+        const nextAngle = ((i + 1) / agentCount) * Math.PI * 2 + this.constellationPhase;
+        const nax = centerX + Math.cos(nextAngle) * orbitR;
+        const nay = centerY + Math.sin(nextAngle) * orbitR;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(nax, nay);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1.0 / this.viewport.scale;
+        ctx.setLineDash([4 / this.viewport.scale, 4 / this.viewport.scale]);
+        ctx.stroke();
+
+        // ── Active Agent Neon Laser Energy Beam ──
+        if (isActive && focalNode) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(focalNode.x, focalNode.y);
+          ctx.strokeStyle = ag.color + '88';
+          ctx.lineWidth = 3.5 / this.viewport.scale;
+          ctx.shadowColor = ag.color;
+          ctx.shadowBlur = 14;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(focalNode.x, focalNode.y);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.2 / this.viewport.scale;
+          ctx.setLineDash([6 / this.viewport.scale, 4 / this.viewport.scale]);
+          ctx.lineDashOffset = -(this.constellationPhase * 60);
+          ctx.stroke();
+
+          const pulseR = (focalNode.radius || 14) + 8 + Math.sin(this.ringPhase * 3) * 4;
+          ctx.beginPath();
+          ctx.arc(focalNode.x, focalNode.y, pulseR, 0, Math.PI * 2);
+          ctx.strokeStyle = ag.color;
+          ctx.lineWidth = 1.5 / this.viewport.scale;
+          ctx.setLineDash([]);
+          ctx.stroke();
+          ctx.restore();
+
+          if (Math.random() < 0.25) {
+            this.spawnParticles(focalNode.x, focalNode.y, ag.color, 1);
+          }
+        }
+
+        // Agent Node Body
+        const aRadius = (isActive ? 18 : 14) / this.viewport.scale;
+        ctx.save();
+        ctx.setLineDash([]);
+        if (isActive) {
+          const auraPulse = Math.sin(this.ringPhase * 3) * 6 + 6;
+          ctx.beginPath();
+          ctx.arc(ax, ay, aRadius + auraPulse, 0, Math.PI * 2);
+          ctx.fillStyle = ag.color + '33';
+          ctx.fill();
+          ctx.strokeStyle = ag.color;
+          ctx.lineWidth = 2 / this.viewport.scale;
+          ctx.stroke();
+        }
+
+        ctx.beginPath();
+        ctx.arc(ax, ay, aRadius, 0, Math.PI * 2);
+        ctx.fillStyle = isActive ? ag.color : 'rgba(15, 23, 42, 0.92)';
+        ctx.fill();
+        ctx.strokeStyle = isActive ? '#ffffff' : ag.color;
+        ctx.lineWidth = (isActive ? 2.5 : 1.5) / this.viewport.scale;
+        ctx.stroke();
+
+        ctx.font = `${Math.round(aRadius * 0.95)}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ag.glyph, ax, ay);
+
+        ctx.font = `600 ${9 / this.viewport.scale}px "Inter", sans-serif`;
+        ctx.fillStyle = isActive ? '#f8fafc' : 'rgba(226, 232, 240, 0.75)';
+        ctx.textAlign = 'center';
+        ctx.fillText(ag.name.replace(/^\d+\.\s*/, ''), ax, ay + aRadius + 12 / this.viewport.scale);
+        ctx.restore();
+      });
+      ctx.restore();
+    }
+
     ctx.restore();
+
+    // ── Screen Space: 8D Radar Hologram ──
+    this._renderRadarHologram();
 
     // ── Minimap ──
     this._renderMinimap();
+  }
+
+  _renderRadarHologram() {
+    if (!this.radarOverlayActive) return;
+    const ctx = this.ctx;
+    const radarX = 130;
+    const radarY = 130;
+    const radarR = 80;
+    const axes = [
+      { key: 'Temporal', label: 'Tid' },
+      { key: 'Spatial', label: 'Spatial' },
+      { key: 'Relational', label: 'Relation' },
+      { key: 'Statutory', label: 'Legal' },
+      { key: 'Financial', label: 'Finans' },
+      { key: 'Operational', label: 'Drift' },
+      { key: 'Cognitive', label: 'Kognition' },
+      { key: 'Evolutionary', label: 'Evolution' }
+    ];
+    const n = axes.length;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(7, 10, 18, 0.88)';
+    ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+    ctx.lineWidth = 1.2;
+    if (ctx.roundRect) ctx.roundRect(15, 15, 230, 230, 10);
+    else ctx.rect(15, 15, 230, 230);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = '700 10px "Outfit", sans-serif';
+    ctx.fillStyle = '#38bdf8';
+    ctx.textAlign = 'left';
+    ctx.fillText('📡 8D CONTEXT RADAR', 28, 36);
+
+    ctx.font = '600 9px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#10b981';
+    ctx.fillText(`Konfidens: ${Math.round(this.radarConfidence * 100)}% · Entropi: ${this.radarEntropy.toFixed(2)}`, 28, 50);
+
+    [0.25, 0.5, 0.75, 1.0].forEach(level => {
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const x = radarX + Math.cos(angle) * (radarR * level);
+        const y = radarY + 12 + Math.sin(angle) * (radarR * level);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = level === 1.0 ? 'rgba(6, 182, 212, 0.4)' : 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 0.9;
+      ctx.stroke();
+    });
+
+    axes.forEach((ax, i) => {
+      const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+      const ex = radarX + Math.cos(angle) * radarR;
+      const ey = radarY + 12 + Math.sin(angle) * radarR;
+      ctx.beginPath();
+      ctx.moveTo(radarX, radarY + 12);
+      ctx.lineTo(ex, ey);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.stroke();
+
+      const lx = radarX + Math.cos(angle) * (radarR + 13);
+      const ly = radarY + 12 + Math.sin(angle) * (radarR + 13);
+      ctx.font = '600 8px "Inter", sans-serif';
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.85)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ax.label, lx, ly);
+    });
+
+    ctx.beginPath();
+    axes.forEach((ax, i) => {
+      const val = this.radarWeights[ax.key] !== undefined ? this.radarWeights[ax.key] : 0.8;
+      const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+      const px = radarX + Math.cos(angle) * (radarR * val);
+      const py = radarY + 12 + Math.sin(angle) * (radarR * val);
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    });
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(6, 182, 212, 0.32)';
+    ctx.fill();
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 2.0;
+    ctx.shadowColor = '#06b6d4';
+    ctx.shadowBlur = 8;
+    ctx.stroke();
+
+    ctx.restore();
   }
 
   _renderMinimap() {

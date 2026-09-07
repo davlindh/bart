@@ -152,7 +152,11 @@ for AgentCls in TWELVE_CORE_AGENTS:
 
 ---
 
-## Fördjupande Referenser
-- För fullständig dokumentation av 8D-viktningsformeln, fönstren W1-W9 och de 6 domänerna, se [Kontextmotor & Domänreferens](./references/context_engine_reference.md).
-- För specifikation av alla agenter, specialister och kontraktet `AgentResult`, se [12-Agent Systemet & Meta-Lärande](./references/twelve_agents_reference.md).
+## Fördjupande Masterreferenser
+- [Masterguide: Samtliga Roller, Agenter & Personas](./references/roles_and_personas_reference.md)
+- [Masterguide: Samtliga Modeller, Kontrakt & ERD-Entiteter](./references/models_and_contracts_reference.md)
+- [Masterguide: Samtliga 7 Avsedda Arbetsflöden (Canonical Workflows)](./references/workflows_and_runbooks_reference.md)
+- [Kontextmotor & Domänarkitektur (8D-Viktning & Fönster W1-W9)](./references/context_engine_reference.md)
+- [12-Agent Systemet & Meta-Lärandeloopen](./references/twelve_agents_reference.md)
+
 
