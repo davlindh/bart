@@ -26,6 +26,10 @@ class ContextResolver:
         "Revisor": [Domain.OPERATIONAL, Domain.EXCHANGE, Domain.TRUST],
         "Säljare": [Domain.EXCHANGE, Domain.INTERACTIONAL, Domain.TOOLS],
         "Verkstadschef": [Domain.OPERATIONAL, Domain.TOOLS, Domain.INTERACTIONAL],
+        "Data Manager": [Domain.OPERATIONAL, Domain.TOOLS, Domain.TRUST, Domain.EXCHANGE],
+        "Innovationsledare": [Domain.TOOLS, Domain.OPERATIONAL, Domain.KNOWLEDGE, Domain.EXCHANGE],
+        "Affärsutvecklare": [Domain.EXCHANGE, Domain.INTERACTIONAL, Domain.TOOLS, Domain.OPERATIONAL],
+        "Strategisk Ledare": [Domain.TRUST, Domain.KNOWLEDGE, Domain.OPERATIONAL, Domain.EXCHANGE],
     }
 
     ROLE_PERSPECTIVES: Dict[str, PerspectiveWindow] = {
@@ -34,6 +38,10 @@ class ContextResolver:
         "Revisor": PerspectiveWindow.W3_EVALUATION,
         "Säljare": PerspectiveWindow.W2_MATCHING,
         "Verkstadschef": PerspectiveWindow.W4_RESOURCE_ALLOCATION,
+        "Data Manager": PerspectiveWindow.W4_RESOURCE_ALLOCATION,
+        "Innovationsledare": PerspectiveWindow.W8_INNOVATION_TECH,
+        "Affärsutvecklare": PerspectiveWindow.W2_MATCHING,
+        "Strategisk Ledare": PerspectiveWindow.W1_CONTEXTUALIZATION,
     }
 
     @classmethod
@@ -53,7 +61,7 @@ class ContextResolver:
         domain_match = 1.0 if any(d.value == ent_domain for d in allowed_domains) else 0.2
         scope_proximity = max(0.1, 1.0 - (ent_hops / max(max_hops + 1, 1)))
         task_relevance = entity.get("relevance_score", 0.85)
-        role_rel = 0.95 if role in ("CFO", "Ekonomiansvarig") and ent_domain in ("Exchange", "Trust", "Operational") else 0.75
+        role_rel = 0.95 if role in ("CFO", "Ekonomiansvarig", "Innovationsledare") and ent_domain in ("Exchange", "Trust", "Operational", "Tools") else 0.75
         recency = entity.get("recency_score", 0.90)
         data_quality = 0.98 if entity.get("is_production_grade", True) else 0.70
         permissions = 1.0 if domain_match > 0.5 else 0.0
@@ -92,15 +100,16 @@ class ContextResolver:
         target_entity: Optional[Dict[str, Any]] = None,
         candidate_entities: Optional[List[Dict[str, Any]]] = None,
         observations: Optional[List[Observation]] = None,
+        window: Optional[PerspectiveWindow] = None,
     ) -> ContextPacket:
         """Executes the 5-step Context Resolution pipeline."""
         target_entity = target_entity or {}
         candidate_entities = candidate_entities or []
         observations = observations or []
 
-        # 1. Determine allowed domains & perspective window by role
-        allowed_domains = cls.ROLE_PERMISSIONS.get(role, [Domain.OPERATIONAL, Domain.EXCHANGE])
-        window = cls.ROLE_PERSPECTIVES.get(role, PerspectiveWindow.W5_FINANCIAL_MANAGEMENT)
+        # 1. Determine allowed domains & perspective window by role (or explicit override)
+        allowed_domains = cls.ROLE_PERMISSIONS.get(role, [Domain.OPERATIONAL, Domain.EXCHANGE, Domain.TOOLS])
+        resolved_window = window or cls.ROLE_PERSPECTIVES.get(role, PerspectiveWindow.W5_FINANCIAL_MANAGEMENT)
 
         # 2. Filter & Weight candidate entities
         max_hops = {"D0": 0, "D1": 1, "D2": 2, "D3": 3}.get(scope.value, 1)
@@ -168,7 +177,7 @@ class ContextResolver:
             task=task,
             scope=scope,
             allowed_domains=allowed_domains,
-            perspective_window=window,
+            perspective_window=resolved_window,
             primary_entity=target_entity,
             related_entities=filtered_entities,
             observations=observations,
