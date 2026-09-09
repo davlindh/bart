@@ -231,8 +231,8 @@ async def resolve_context(req: ContextResolveRequest):
         {
             "context_id": packet.context_id,
             "target_node": packet.target_node,
-            "nodes_count": len(packet.graph_nodes),
-            "relations_count": len(packet.graph_relations),
+            "nodes_count": len(packet.nodes),
+            "relations_count": len(packet.relations),
         }
     )
 

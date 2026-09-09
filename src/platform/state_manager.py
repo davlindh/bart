@@ -3,13 +3,14 @@
 Migrated and adapted from 3.7fmossmorph/meta-framework/layered_runner/local_state_manager.ts.
 Provides:
   - In-memory entity caching with TTL staleness expiration
-  - LRU/capacity-bounded eviction
+  - LRU/capacity-bounded eviction using OrderedDict (move-to-end on access)
   - Optimistic local state updates with rollback capability
   - Multi-subscriber change notification bus
 """
 
 import time
-from typing import Any, Callable, Dict, List, Optional, Set
+from collections import OrderedDict
+from typing import Any, Callable, Dict, Optional, Set
 from pydantic import BaseModel, Field
 
 from src.core.contracts import UserEntityState
@@ -36,18 +37,20 @@ class LocalStateManager:
 
     def __init__(self, options: Optional[StateManagerOptions] = None):
         self.options = options or StateManagerOptions()
-        self._cache: Dict[str, EntityCacheEntry] = {}
+        self._cache: OrderedDict[str, EntityCacheEntry] = OrderedDict()
         self._subscribers: Dict[str, Set[Callable[[UserEntityState], Any]]] = {}  # entity_id -> callbacks
         self._global_subscribers: Set[Callable[[str, UserEntityState], Any]] = set()
 
     # ── Cache Operations ────────────────────────────────────────────────
 
     def get_entity(self, entity_id: str) -> Optional[UserEntityState]:
-        """Retrieve an entity from the local cache and update its access time."""
+        """Retrieve an entity from the local cache and move it to MRU position."""
         entry = self._cache.get(entity_id)
         if not entry:
             return None
         entry.last_accessed = time.time()
+        # Move to end = most recently used
+        self._cache.move_to_end(entity_id)
         return entry.entity
 
     def set_entity(
@@ -68,6 +71,8 @@ class LocalStateManager:
             original_snapshot=original_snapshot,
         )
         self._cache[entity.entity_id] = entry
+        # Move to end = most recently used
+        self._cache.move_to_end(entity.entity_id)
         self._notify_subscribers(entity.entity_id, entity)
 
     def is_stale(self, entity_id: str) -> bool:
@@ -168,11 +173,11 @@ class LocalStateManager:
     # ── Internal Cleanup & Eviction ─────────────────────────────────────
 
     def _evict_lru(self) -> None:
-        """Evict the least-recently accessed entity from cache."""
+        """Evict the least-recently used entity (front of OrderedDict)."""
         if not self._cache:
             return
-        lru_id = min(self._cache.keys(), key=lambda k: self._cache[k].last_accessed)
-        del self._cache[lru_id]
+        # popitem(last=False) removes the first item = least recently used
+        self._cache.popitem(last=False)
 
     def cleanup_stale_entries(self) -> int:
         """Remove all stale non-optimistic entities. Returns count of removed items."""

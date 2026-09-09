@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>BART — Team Dynamics Optimizer</title>
+  <meta name="description" content="Real-time multi-agent team optimization dashboard — live knowledge graph, 14-agent loop monitoring, and 9 Omnipod perspective windows."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg-base:#07070f;--bg-surface:#0d0d1a;--bg-elevated:#12122a;
+      --glass-bg:rgba(18,18,42,.55);--glass-border:rgba(120,100,255,.18);--glass-shine:rgba(255,255,255,.04);
+      --accent-violet:#7c5cff;--accent-cyan:#00d4ff;--accent-teal:#00ffcc;
+      --accent-rose:#ff4d8d;--accent-amber:#ffb347;
+      --text-primary:#e8e8f4;--text-secondary:#8888bb;--text-muted:#44445a;
+      --node-role:#7c5cff;--node-process:#00d4ff;--node-kpi:#00ffcc;
+      --node-person:#ff9f43;--node-knowledge:#fd79a8;--node-system:#6c5ce7;
+      --node-team:#a29bfe;--node-org:#74b9ff;--node-decision:#ffeaa7;
+      --agent-idle:rgba(120,100,255,.15);--agent-active:rgba(0,212,255,.25);--agent-done:rgba(0,255,204,.18);
+      --radius-sm:6px;--radius-md:12px;--radius-lg:18px;
+      --shadow-glow-v:0 0 24px rgba(124,92,255,.35);
+      --shadow-card:0 4px 32px rgba(0,0,0,.45);
+      --tf:150ms cubic-bezier(.4,0,.2,1);--tm:300ms cubic-bezier(.4,0,.2,1);--ts:600ms cubic-bezier(.4,0,.2,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-base);color:var(--text-primary);min-height:100vh;overflow-x:hidden;line-height:1.6}
+    body::before{content:'';position:fixed;inset:0;background:
+      radial-gradient(ellipse 80% 50% at 20% 20%,rgba(124,92,255,.07) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%,rgba(0,212,255,.06) 0%,transparent 60%),
+      radial-gradient(ellipse 40% 30% at 50% 50%,rgba(0,255,204,.03) 0%,transparent 50%);
+      pointer-events:none;z-index:0}
+    .skip-link{position:absolute;top:-100%;left:1rem;z-index:10000;background:var(--accent-violet);color:#fff;padding:.5rem 1rem;border-radius:var(--radius-sm);font-weight:600;text-decoration:none;transition:top var(--tf)}
+    .skip-link:focus{top:1rem}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(124,92,255,.3);border-radius:99px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(124,92,255,.6)}
+    .glass{background:var(--glass-bg);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border:1px solid var(--glass-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-card),inset 0 1px 0 var(--glass-shine);position:relative;z-index:1}
+    .glass::before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.04) 0%,transparent 60%);pointer-events:none}
+    .app-wrapper{display:grid;grid-template-rows:auto 1fr;min-height:100vh;position:relative;z-index:1}
+    .topnav{display:flex;align-items:center;gap:1.5rem;padding:0 2rem;height:60px;background:rgba(7,7,15,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(120,100,255,.12);position:sticky;top:0;z-index:100}
+    .logo{display:flex;align-items:center;gap:.6rem;font-size:1.15rem;font-weight:700;letter-spacing:-.02em;color:var(--text-primary);text-decoration:none}
+    .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent-violet),var(--accent-cyan));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;box-shadow:0 0 16px rgba(124,92,255,.5)}
+    .logo-sub{font-size:.72rem;font-weight:400;color:var(--text-secondary);letter-spacing:.05em}
+    .nav-links{display:flex;gap:.25rem;list-style:none;margin-left:auto}
+    .nav-links a{display:flex;align-items:center;gap:.4rem;padding:.35rem .8rem;border-radius:var(--radius-sm);font-size:.82rem;font-weight:500;color:var(--text-secondary);text-decoration:none;transition:background var(--tf),color var(--tf)}
+    .nav-links a:hover,.nav-links a[aria-current]{background:rgba(124,92,255,.12);color:var(--text-primary)}
+    .nav-links a[aria-current]{color:var(--accent-violet)}
+    .status-pill{display:flex;align-items:center;gap:.4rem;padding:.3rem .75rem;background:rgba(0,255,204,.07);border:1px solid rgba(0,255,204,.2);border-radius:99px;font-size:.75rem;font-weight:500;color:var(--accent-teal);white-space:nowrap}
+    .status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent-teal);animation:pdot 2s ease-in-out infinite}
+    .status-dot.offline{background:var(--accent-amber);animation:none}
+    @keyframes pdot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,255,204,.6)}50%{opacity:.8;box-shadow:0 0 0 5px rgba(0,255,204,0)}}
+    main{display:grid;grid-template-columns:1fr 340px;gap:1.25rem;padding:1.25rem 2rem 2rem;max-width:1600px;margin:0 auto;width:100%}
+    .metrics-bar{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem}
+    .metric-card{padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.25rem;transition:transform var(--tm),box-shadow var(--tm)}
+    .metric-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card),var(--shadow-glow-v)}
+    .metric-label{font-size:.72rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary)}
+    .metric-value{font-size:1.75rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;background:linear-gradient(135deg,var(--accent-violet),var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .metric-delta{font-size:.75rem;font-weight:500;display:flex;align-items:center;gap:.25rem}
+    .metric-delta.up{color:var(--accent-teal)}.metric-delta.down{color:var(--accent-rose)}.metric-delta.neutral{color:var(--text-secondary)}
+    .graph-panel{padding:1.25rem;min-height:420px;display:flex;flex-direction:column;gap:1rem}
+    .panel-header{display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+    .panel-title{font-size:.9rem;font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:.5rem}
+    .badge{font-size:.68rem;font-weight:600;padding:.15rem .5rem;border-radius:99px;background:rgba(124,92,255,.15);color:var(--accent-violet);border:1px solid rgba(124,92,255,.25)}
+    .graph-canvas{flex:1;border-radius:var(--radius-md);background:rgba(0,0,0,.25);border:1px solid rgba(120,100,255,.08);position:relative;overflow:hidden;min-height:340px}
+    #graph-svg{width:100%;height:100%;display:block}
+    .graph-legend{display:flex;flex-wrap:wrap;gap:.5rem}
+    .legend-item{display:flex;align-items:center;gap:.35rem;font-size:.7rem;color:var(--text-secondary)}
+    .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .right-panel{display:flex;flex-direction:column;gap:1.25rem}
+    .agent-loop-panel{grid-column:1/-1;padding:1.25rem}
+    .agent-pipeline{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding:.5rem 0;scrollbar-width:thin}
+    .agent-step{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:82px;flex:1;padding:.7rem .4rem;border-radius:var(--radius-md);background:var(--agent-idle);border:1px solid rgba(120,100,255,.1);position:relative;transition:background var(--tm),border-color var(--tm);cursor:default}
+    .agent-step[data-state=active]{background:var(--agent-active);border-color:rgba(0,212,255,.4);animation:apulse 1.5s ease-in-out infinite}
+    .agent-step[data-state=done]{background:var(--agent-done);border-color:rgba(0,255,204,.3)}
+    .agent-step+.agent-step{margin-left:5px}
+    .agent-icon{font-size:1.25rem}.agent-name{font-size:.57rem;font-weight:600;text-align:center;color:var(--text-secondary);line-height:1.3}
+    .agent-step[data-state=active] .agent-name{color:var(--accent-cyan)}
+    .agent-step[data-state=done] .agent-name{color:var(--accent-teal)}
+    .agent-status-icon{font-size:.7rem}
+    @keyframes apulse{0%,100%{box-shadow:0 0 12px rgba(0,212,255,.2)}50%{box-shadow:0 0 28px rgba(0,212,255,.5)}}
+    .windows-panel{grid-column:1/-1;padding:1.25rem}
+    .windows-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem;margin-top:1rem}
+    .window-card{padding:1rem;border-radius:var(--radius-md);background:rgba(18,18,42,.7);border:1px solid var(--glass-border);transition:transform var(--tm),border-color var(--tm),box-shadow var(--tm);cursor:pointer;position:relative;overflow:hidden}
+    .window-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent-violet),var(--accent-cyan));transform:scaleX(0);transform-origin:left;transition:transform var(--tm)}
+    .window-card:hover{transform:translateY(-3px);border-color:rgba(124,92,255,.4);box-shadow:0 8px 32px rgba(124,92,255,.15)}
+    .window-card:hover::after{transform:scaleX(1)}
+    .window-card:focus{outline:2px solid var(--accent-violet);outline-offset:2px}
+    .window-card[aria-selected=true]{border-color:rgba(0,212,255,.5);background:rgba(0,212,255,.05)}
+    .window-card[aria-selected=true]::after{transform:scaleX(1);background:linear-gradient(90deg,var(--accent-cyan),var(--accent-teal))}
+    .window-num{font-size:.65rem;font-weight:700;color:var(--text-muted);letter-spacing:.1em;margin-bottom:.25rem}
+    .window-name{font-size:.8rem;font-weight:600;margin-bottom:.5rem}
+    .window-stats{display:flex;gap:.5rem;flex-wrap:wrap}
+    .window-stat{font-size:.68rem;padding:.15rem .4rem;border-radius:99px;background:rgba(120,100,255,.1);color:var(--text-secondary)}
+    .entanglement-count{position:absolute;top:.75rem;right:.75rem;font-size:.65rem;font-weight:600;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent-violet),var(--accent-cyan));display:flex;align-items:center;justify-content:center;color:#fff}
+    .event-stream-panel,.context-panel{padding:1.25rem}
+    .event-log{list-style:none;display:flex;flex-direction:column;gap:.4rem;max-height:260px;overflow-y:auto;padding-right:.25rem}
+    .event-item{display:flex;align-items:flex-start;gap:.5rem;padding:.5rem .65rem;border-radius:var(--radius-sm);font-size:.75rem;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.04);animation:slidein var(--tm) ease}
+    @keyframes slidein{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+    .event-type-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:.25rem}
+    .event-time{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
+    .event-message{color:var(--text-secondary);flex:1}
+    .event-message strong{color:var(--text-primary);font-weight:500}
+    .context-row{display:flex;flex-direction:column;gap:.25rem;padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,.05)}
+    .context-row:last-child{border-bottom:none}
+    .context-key{font-size:.68rem;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)}
+    .context-val{font-size:.8rem;color:var(--text-primary)}
+    .context-val code{font-family:'JetBrains Mono',monospace;font-size:.72rem;background:rgba(124,92,255,.1);padding:.1rem .35rem;border-radius:4px;color:var(--accent-violet)}
+    .btn-trigger{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.25rem;background:linear-gradient(135deg,var(--accent-violet),rgba(0,212,255,.8));border:none;border-radius:var(--radius-md);color:#fff;font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:transform var(--tf),box-shadow var(--tf);box-shadow:0 4px 16px rgba(124,92,255,.4)}
+    .btn-trigger:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,92,255,.55)}
+    .btn-trigger:active{transform:translateY(0)}
+    .btn-trigger:focus-visible{outline:2px solid var(--accent-cyan);outline-offset:3px}
+    .btn-trigger:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .btn-trigger .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
+    .btn-trigger[data-loading=true] .spinner{display:block}
+    .btn-trigger[data-loading=true] .btn-label{opacity:.7}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .scope-selector{display:flex;gap:.35rem;flex-wrap:wrap}
+    .scope-btn{padding:.25rem .6rem;border-radius:99px;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:500;border:1px solid rgba(120,100,255,.25);background:transparent;color:var(--text-secondary);cursor:pointer;transition:background var(--tf),color var(--tf),border-color var(--tf)}
+    .scope-btn:hover{background:rgba(124,92,255,.12);color:var(--text-primary)}
+    .scope-btn.active{background:rgba(124,92,255,.2);border-color:var(--accent-violet);color:var(--accent-violet)}
+    .scope-btn:focus-visible{outline:2px solid var(--accent-violet)}
+    .reveal{opacity:0;transform:translateY(16px);transition:opacity var(--ts),transform var(--ts)}
+    .reveal.visible{opacity:1;transform:none}
+    [data-tip]{position:relative}
+    [data-tip]::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg-elevated);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:.3rem .6rem;font-size:.7rem;color:var(--text-primary);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity var(--tf);z-index:50}
+    [data-tip]:hover::after{opacity:1}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:1024px){main{grid-template-columns:1fr;padding:1rem}.right-panel{display:contents}}
+    @media(max-width:640px){.topnav{padding:0 1rem}.nav-links{display:none}main{padding:.75rem;gap:1rem}}
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to main content</a>
+  <div class="app-wrapper">
+    <header role="banner">
+      <nav class="topnav" aria-label="Primary navigation">
+        <a href="#" class="logo" aria-label="BART home">
+          <span class="logo-icon" aria-hidden="true">🧠</span>
+          <span>BART<span class="logo-sub" style="display:block">Team Dynamics Optimizer</span></span>
+        </a>
+        <ul class="nav-links" role="list">
+          <li><a href="#graph" aria-current="page">📊 Graph</a></li>
+          <li><a href="#agents">🤖 Agents</a></li>
+          <li><a href="#windows">🪟 Windows</a></li>
+          <li><a href="#stream">⚡ Events</a></li>
+        </ul>
+        <div class="status-pill" role="status" aria-live="polite">
+          <span class="status-dot offline" id="sdot" aria-hidden="true"></span>
+          <span id="slabel">Connecting…</span>
+        </div>
+      </nav>
+    </header>
+    <main id="main" aria-label="BART monitoring dashboard">
+      <section class="metrics-bar" aria-label="KPIs">
+        <article class="glass metric-card reveal" aria-labelledby="m1"><span class="metric-label" id="m1">Graph Nodes</span><span class="metric-value" id="v-nodes" aria-live="polite">—</span><span class="metric-delta neutral">loading</span></article>
+        <article class="glass metric-card reveal" style="transition-delay:60ms" aria-labelledby="m2"><span class="metric-label" id="m2">Relationships</span><span class="metric-value" id="v-edges" aria-live="polite">—</span><span class="metric-delta neutral">loading</span></article>
+        <article class="glass metric-card reveal" style="transition-delay:120ms" aria-labelledby="m3"><span class="metric-label" id="m3">Agents</span><span class="metric-value">14</span><span class="metric-delta up">▲ full loop</span></article>
+        <article class="glass metric-card reveal" style="transition-delay:180ms" aria-labelledby="m4"><span class="metric-label" id="m4">Diagnostic Accuracy</span><span class="metric-value" id="v-acc" aria-live="polite">—</span><span class="metric-delta neutral">idle</span></article>
+        <article class="glass metric-card reveal" style="transition-delay:240ms" aria-labelledby="m5"><span class="metric-label" id="m5">Omnipod Windows</span><span class="metric-value">9</span><span class="metric-delta up">▲ active</span></article>
+        <article class="glass metric-card reveal" style="transition-delay:300ms" aria-labelledby="m6"><span class="metric-label" id="m6">Scoring Dims</span><span class="metric-value">10</span><span class="metric-delta up">▲ incl. emo</span></article>
+      </section>
+
+      <section id="graph" class="glass graph-panel reveal" aria-labelledby="gtitle">
+        <div class="panel-header">
+          <h2 class="panel-title" id="gtitle">
+            <span aria-hidden="true">🕸</span> Knowledge Graph
+            <span class="badge" id="nbadge" aria-live="polite">0 nodes</span>
+          </h2>
+          <select id="domfilter" aria-label="Filter by domain" style="background:rgba(0,0,0,.3);border:1px solid rgba(120,100,255,.2);color:var(--text-secondary);padding:.25rem .5rem;border-radius:var(--radius-sm);font-size:.75rem;font-family:inherit;cursor:pointer">
+            <option value="all">All domains</option>
+            <option value="Operational">Operational</option>
+            <option value="Trust">Trust</option>
+            <option value="Knowledge">Knowledge</option>
+            <option value="Data">Data</option>
+          </select>
+        </div>
+        <div class="graph-canvas" role="img" aria-label="Force-directed knowledge graph">
+          <svg id="gsvg" aria-hidden="true"></svg>
+          <div id="gtip" role="tooltip" style="position:absolute;display:none;background:var(--bg-elevated);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:.5rem .75rem;font-size:.75rem;pointer-events:none;z-index:10;max-width:200px"></div>
+        </div>
+        <div class="graph-legend" role="list" aria-label="Legend">
+          <div class="legend-item" role="listitem"><span class="legend-dot" style="background:var(--node-role)"></span>Role</div>
+          <div class="legend-item" role="listitem"><span class="legend-dot" style="background:var(--node-process)"></span>Process</div>
+          <div class="legend-item" role="listitem"><span class="legend-dot" style="background:var(--node-kpi)"></span>KPI</div>
+          <div class="legend-item" role="listitem"><span class="legend-dot" style="background:var(--node-person)"></span>Person</div>
+          <div class="legend-item" role="listitem"><span class="legend-dot" style="background:var(--node-knowledge)"></span>Knowledge</div>
+          <div class="legend-item" role="listitem"><span class="legend-dot" style="background:var(--node-system)"></span>System</div>
+          <div class="legend-item" role="listitem"><span class="legend-dot" style="background:var(--node-team)"></span>Team</div>
+          <div class="legend-item" role="listitem"><span class="legend-dot" style="background:var(--node-org)"></span>Org</div>
+          <div class="legend-item" role="listitem"><span class="legend-dot" style="background:var(--node-decision)"></span>Decision</div>
+        </div>
+      </section>
+
+      <div class="right-panel">
+        <section id="stream" class="glass event-stream-panel reveal" aria-labelledby="stitle">
+          <div class="panel-header" style="margin-bottom:.75rem">
+            <h2 class="panel-title" id="stitle"><span aria-hidden="true">⚡</span> Live Events</h2>
+            <button id="clrevt" style="background:none;border:1px solid rgba(255,255,255,.08);color:var(--text-muted);font-size:.7rem;padding:.2rem .5rem;border-radius:var(--radius-sm);cursor:pointer" aria-label="Clear log">Clear</button>
+          </div>
+          <ul id="evlog" class="event-log" aria-live="polite" aria-label="System events" aria-relevant="additions">
+            <li class="event-item"><span class="event-type-dot" style="background:var(--text-muted)" aria-hidden="true"></span><span class="event-time">—</span><span class="event-message">Waiting…</span></li>
+          </ul>
+        </section>
+        <section class="glass context-panel reveal" aria-labelledby="ctxtitle">
+          <div class="panel-header" style="margin-bottom:.75rem">
+            <h2 class="panel-title" id="ctxtitle"><span aria-hidden="true">🎯</span> Context Resolution</h2>
+          </div>
+          <div class="context-row"><span class="context-key">Focal Node</span><span class="context-val"><code id="ctx-focal">node:role:decision_owner_042</code></span></div>
+          <div class="context-row"><span class="context-key">Role</span><span class="context-val" id="ctx-role">Ägare / VD</span></div>
+          <div class="context-row">
+            <span class="context-key">Scope Depth</span>
+            <div class="scope-selector" role="group" aria-label="Scope depth">
+              <button class="scope-btn" data-d="D0" aria-pressed="false">D0</button>
+              <button class="scope-btn active" data-d="D1" aria-pressed="true">D1</button>
+              <button class="scope-btn" data-d="D2" aria-pressed="false">D2</button>
+              <button class="scope-btn" data-d="D3" aria-pressed="false">D3</button>
+            </div>
+          </div>
+          <div class="context-row"><span class="context-key">Task</span><span class="context-val" id="ctx-task" style="font-size:.75rem">Analysera avvikelser i TB/TG samt förfallna kundfordringar</span></div>
+          <div style="margin-top:1rem">
+            <button id="runbtn" class="btn-trigger" aria-label="Run full 14-agent optimization cycle">
+              <span class="spinner" aria-hidden="true"></span>
+              <span class="btn-label">▶ Run Full Cycle</span>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <section id="agents" class="glass agent-loop-panel reveal" aria-labelledby="atitle">
+        <div class="panel-header" style="margin-bottom:1rem">
+          <h2 class="panel-title" id="atitle"><span aria-hidden="true">🤖</span> 14-Agent Loop <span class="badge" id="cbadge" aria-live="polite">idle</span></h2>
+          <span id="cprog" style="font-size:.75rem;color:var(--text-secondary)" aria-live="polite"></span>
+        </div>
+        <div class="agent-pipeline" id="pipeline" role="list" aria-label="Agent pipeline"></div>
+      </section>
+
+      <section id="windows" class="glass windows-panel reveal" aria-labelledby="wtitle">
+        <div class="panel-header">
+          <h2 class="panel-title" id="wtitle"><span aria-hidden="true">🪟</span> Omnipod Perspective Windows</h2>
+          <span style="font-size:.75rem;color:var(--text-secondary)">9 windows · 3-tier decomposition</span>
+        </div>
+        <div class="windows-grid" id="wgrid" role="list" aria-label="Omnipod windows"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+  const DEMO=true, API='http://localhost:8000';
+  const AGENTS=[
+    {name:'Observer',icon:'👁',id:'observer'},{name:'Integration',icon:'🔗',id:'integration'},
+    {name:'Synthesizer',icon:'🧩',id:'synthesizer'},{name:'Diagnostician',icon:'🔬',id:'diagnostician'},
+    {name:'Team Architect',icon:'🏗',id:'architect'},{name:'Role Transition',icon:'🔄',id:'transition'},
+    {name:'Collaboration',icon:'🤝',id:'collab'},{name:'Wellbeing',icon:'💚',id:'wellbeing'},
+    {name:'AI Ethics',icon:'⚖',id:'ethics'},{name:'Experiment',icon:'🧪',id:'experiment'},
+    {name:'Measurement',icon:'📐',id:'measurement'},{name:'Learning',icon:'📚',id:'learning'},
+    {name:'Meta-Learning',icon:'🔁',id:'meta'},{name:'Orchestrator',icon:'🎭',id:'orchestrator'}
+  ];
+  const WINS=[
+    {n:1,name:'Contextualization',icon:'🧭',c:4,p:12,e:3},{n:2,name:'Matching',icon:'🔍',c:3,p:9,e:2},
+    {n:3,name:'Evaluation',icon:'📊',c:5,p:14,e:4},{n:4,name:'Resource Allocation',icon:'📦',c:4,p:10,e:2},
+    {n:5,name:'Financial Management',icon:'💰',c:3,p:8,e:2},{n:6,name:'Personnel Management',icon:'👥',c:5,p:13,e:5},
+    {n:7,name:'Communication',icon:'📡',c:4,p:11,e:3},{n:8,name:'Innovation & Tech',icon:'🚀',c:4,p:10,e:3},
+    {n:9,name:'Adaptive Insights',icon:'🧠',c:3,p:9,e:4}
+  ];
+  const NODES=[
+    {id:'org:maskin_och_fritid',label:'Maskin och Fritid AB',type:'Organization',domain:'Operational'},
+    {id:'team:platform_data',label:'Data Platform & Logistics',type:'Team',domain:'Operational'},
+    {id:'team:data_engineering',label:'Data Engineering Team',type:'Team',domain:'Operational'},
+    {id:'person:user_a',label:'User A (Verifier)',type:'Person',domain:'Trust'},
+    {id:'person:user_b',label:'User B (Data Mgr)',type:'Person',domain:'Data'},
+    {id:'person:user_c',label:'User C (Security)',type:'Person',domain:'Trust'},
+    {id:'person:user_d',label:'User D (Knowledge)',type:'Person',domain:'Knowledge'},
+    {id:'node:role:decision_owner_042',label:'Decision Owner (SLA)',type:'Role',domain:'Operational'},
+    {id:'node:process:data_pipeline_z',label:'Data Pipeline Z',type:'DataPipeline',domain:'Operational'},
+    {id:'node:process:queue_process_y',label:'Process Y (Validation)',type:'Process',domain:'Operational'},
+    {id:'node:kpi:decision_time',label:'KPI: Decision Time',type:'Metric',domain:'Operational'},
+    {id:'node:decision:decision_x',label:'Decision X (Dispatch)',type:'Decision',domain:'Operational'},
+    {id:'node:system:erp_export',label:'ERP Export Service',type:'System',domain:'Operational'},
+    {id:'node:role:pipeline_maintainer',label:'Pipeline SRE',type:'Role',domain:'Operational'},
+    {id:'node:asset:knowledge_etl_guide',label:'ETL Playbook',type:'KnowledgeAsset',domain:'Knowledge'}
+  ];
+  const EDGES=[
+    {s:'team:platform_data',t:'org:maskin_och_fritid',r:'BELONGS_TO'},
+    {s:'person:user_b',t:'node:role:decision_owner_042',r:'ASSIGNED_TO'},
+    {s:'node:role:decision_owner_042',t:'node:decision:decision_x',r:'HAS_AUTHORITY'},
+    {s:'node:role:decision_owner_042',t:'node:process:data_pipeline_z',r:'DEPENDS_ON'},
+    {s:'node:role:decision_owner_042',t:'node:process:queue_process_y',r:'DEPENDS_ON'},
+    {s:'node:role:decision_owner_042',t:'node:kpi:decision_time',r:'MEASURED_BY'},
+    {s:'node:process:data_pipeline_z',t:'node:system:erp_export',r:'INGESTS_FROM'},
+    {s:'node:process:data_pipeline_z',t:'node:role:pipeline_maintainer',r:'MAINTAINED_BY'},
+    {s:'node:role:pipeline_maintainer',t:'team:data_engineering',r:'BELONGS_TO'},
+    {s:'node:process:data_pipeline_z',t:'node:asset:knowledge_etl_guide',r:'GOVERNED_BY'}
+  ];
+  const NC={Role:'#7c5cff',DataPipeline:'#00d4ff',Metric:'#00ffcc',Person:'#ff9f43',KnowledgeAsset:'#fd79a8',System:'#6c5ce7',Team:'#a29bfe',Organization:'#74b9ff',Decision:'#ffeaa7',Process:'#00d4ff',Domain:'#55efc4'};
+  const EC={cycle_started:'#7c5cff',cycle_completed:'#00ffcc',agent_started:'#00d4ff',agent_completed:'#a29bfe',default:'#44445a',error:'#ff4d8d'};
+
+  // Force graph
+  class G{
+    constructor(el,ns,es){this.el=el;this.an=ns;this.ae=es;this.vn=[...ns];this.ve=[...es];this.pos={};this.vel={};this.drag=null;this.init()}
+    init(){const w=this.el.clientWidth||700,h=this.el.clientHeight||340;this.w=w;this.h=h;this.vn.forEach((n,i)=>{const a=2*Math.PI*i/this.vn.length,r=Math.min(w,h)*.3;this.pos[n.id]={x:w/2+r*Math.cos(a)*(.6+Math.random()*.4),y:h/2+r*Math.sin(a)*(.6+Math.random()*.4)};this.vel[n.id]={x:0,y:0}});this.draw();let t=0;const tick=()=>{t++;this.sim(Math.max(.05,1-t/600));this.draw();requestAnimationFrame(tick)};requestAnimationFrame(tick);this.bindd()}
+    sim(c){this.vn.forEach(n=>{if(this.drag===n.id)return;let fx=0,fy=0;const p=this.pos[n.id];this.vn.forEach(m=>{if(m.id===n.id)return;const q=this.pos[m.id],dx=p.x-q.x,dy=p.y-q.y,d=Math.max(1,Math.sqrt(dx*dx+dy*dy)),f=1400/(d*d);fx+=f*dx/d;fy+=f*dy/d});this.ve.forEach(e=>{let o=null;if(e.s===n.id)o=this.pos[e.t];if(e.t===n.id)o=this.pos[e.s];if(!o)return;fx+=(o.x-p.x)*.012;fy+=(o.y-p.y)*.012});fx+=(this.w/2-p.x)*.0025;fy+=(this.h/2-p.y)*.0025;const v=this.vel[n.id];v.x=(v.x+fx)*.75*c;v.y=(v.y+fy)*.75*c;p.x=Math.max(28,Math.min(this.w-28,p.x+v.x));p.y=Math.max(28,Math.min(this.h-28,p.y+v.y))})}
+    filter(dom){if(dom==='all'){this.vn=[...this.an];this.ve=[...this.ae]}else{this.vn=this.an.filter(n=>n.domain===dom);const ids=new Set(this.vn.map(n=>n.id));this.ve=this.ae.filter(e=>ids.has(e.s)&&ids.has(e.t))}this.vn.forEach(n=>{if(!this.pos[n.id]){this.pos[n.id]={x:this.w/2+(Math.random()-.5)*100,y:this.h/2+(Math.random()-.5)*100};this.vel[n.id]={x:0,y:0}}})}
+    draw(){const sv=this.el,ns='http://www.w3.org/2000/svg',w=sv.clientWidth||this.w,h=sv.clientHeight||this.h;this.w=w;this.h=h;while(sv.firstChild)sv.removeChild(sv.lastChild);
+      const df=document.createElementNS(ns,'defs'),mk=document.createElementNS(ns,'marker');mk.setAttribute('id','arr');mk.setAttribute('viewBox','0 0 8 8');mk.setAttribute('refX','8');mk.setAttribute('refY','4');mk.setAttribute('markerWidth','5');mk.setAttribute('markerHeight','5');mk.setAttribute('orient','auto');const ap=document.createElementNS(ns,'path');ap.setAttribute('d','M0,0 L8,4 L0,8 Z');ap.setAttribute('fill','rgba(120,100,255,.4)');mk.appendChild(ap);df.appendChild(mk);sv.appendChild(df);
+      this.ve.forEach(e=>{const sp=this.pos[e.s],tp=this.pos[e.t];if(!sp||!tp)return;const l=document.createElementNS(ns,'line');l.setAttribute('x1',sp.x);l.setAttribute('y1',sp.y);l.setAttribute('x2',tp.x);l.setAttribute('y2',tp.y);l.setAttribute('stroke','rgba(120,100,255,.22)');l.setAttribute('stroke-width','1.2');l.setAttribute('marker-end','url(#arr)');sv.appendChild(l)});
+      this.vn.forEach(n=>{const p=this.pos[n.id];if(!p)return;const col=NC[n.type]||'#7c5cff',r=11,g=document.createElementNS(ns,'g');g.setAttribute('tabindex','0');g.setAttribute('aria-label',`${n.type}: ${n.label}`);g.style.cursor='pointer';
+        const rn=document.createElementNS(ns,'circle');rn.setAttribute('cx',p.x);rn.setAttribute('cy',p.y);rn.setAttribute('r',r+5);rn.setAttribute('fill','none');rn.setAttribute('stroke',col);rn.setAttribute('stroke-width','1');rn.setAttribute('opacity',n.id==='node:role:decision_owner_042'?'.55':'.15');g.appendChild(rn);
+        const ci=document.createElementNS(ns,'circle');ci.setAttribute('cx',p.x);ci.setAttribute('cy',p.y);ci.setAttribute('r',r);ci.setAttribute('fill',col);ci.setAttribute('fill-opacity','.85');g.appendChild(ci);
+        const tx=document.createElementNS(ns,'text');tx.setAttribute('x',p.x);tx.setAttribute('y',p.y+r+13);tx.setAttribute('text-anchor','middle');tx.setAttribute('font-size','8.5');tx.setAttribute('fill','rgba(200,200,240,.8)');tx.setAttribute('font-family','Inter,sans-serif');tx.textContent=n.label.length>16?n.label.slice(0,15)+'…':n.label;g.appendChild(tx);
+        g.addEventListener('mousedown',ev=>{this.drag=n.id;ev.preventDefault()});g.addEventListener('mouseenter',ev=>showTip(ev,n));g.addEventListener('mouseleave',hideTip);g.addEventListener('focus',ev=>showTip(ev,n));g.addEventListener('blur',hideTip);sv.appendChild(g)})}
+    bindd(){const sv=this.el;sv.addEventListener('mousemove',ev=>{if(!this.drag)return;const r=sv.getBoundingClientRect();this.pos[this.drag]={x:ev.clientX-r.left,y:ev.clientY-r.top};this.vel[this.drag]={x:0,y:0}});sv.addEventListener('mouseup',()=>{this.drag=null});sv.addEventListener('mouseleave',()=>{this.drag=null})}
+  }
+
+  const gtip=document.getElementById('gtip');
+  function showTip(ev,n){gtip.innerHTML=`<strong style="color:${NC[n.type]||'#fff'}">${n.type}</strong><br><span style="color:var(--text-primary)">${n.label}</span><br><span style="color:var(--text-muted);font-size:.65rem">${n.domain}</span>`;gtip.style.display='block';const r=gtip.parentElement.getBoundingClientRect();gtip.style.left=Math.min(ev.clientX-r.left+12,r.width-210)+'px';gtip.style.top=Math.max(ev.clientY-r.top-80,4)+'px'}
+  function hideTip(){gtip.style.display='none'}
+
+  function buildPipeline(){const c=document.getElementById('pipeline');c.innerHTML='';AGENTS.forEach(a=>{const d=document.createElement('div');d.className='agent-step';d.setAttribute('role','listitem');d.setAttribute('data-state','idle');d.setAttribute('data-agent',a.id);d.setAttribute('aria-label',`${a.name} — idle`);d.setAttribute('data-tip',a.name);d.innerHTML=`<span class="agent-icon" aria-hidden="true">${a.icon}</span><span class="agent-name">${a.name}</span><span class="agent-status-icon" aria-hidden="true">·</span>`;c.appendChild(d)})}
+  function setAS(id,s){const el=document.querySelector(`[data-agent="${id}"]`);if(!el)return;el.setAttribute('data-state',s);const si=el.querySelector('.agent-status-icon');const nm=el.querySelector('.agent-name').closest('[data-agent]').querySelector('.agent-name').textContent;if(s==='active'){si.textContent='⟳';el.setAttribute('aria-label',`${nm} — running`)}if(s==='done'){si.textContent='✓';el.setAttribute('aria-label',`${nm} — done`)}if(s==='idle'){si.textContent='·'}}
+  function resetPipe(){AGENTS.forEach(a=>setAS(a.id,'idle'))}
+
+  function buildWins(){const g=document.getElementById('wgrid');WINS.forEach(w=>{const c=document.createElement('div');c.className='window-card';c.setAttribute('role','listitem');c.setAttribute('tabindex','0');c.setAttribute('aria-selected','false');c.setAttribute('aria-label',`Window ${w.n}: ${w.name} — ${w.c} components, ${w.p} particles, ${w.e} entanglements`);c.innerHTML=`<div class="window-num" aria-hidden="true">W${w.n}</div><div class="window-name">${w.icon} ${w.name}</div><div class="window-stats" aria-hidden="true"><span class="window-stat">${w.c} comps</span><span class="window-stat">${w.p} ⚛</span></div><div class="entanglement-count" aria-label="${w.e} entanglements">${w.e}</div>`;c.addEventListener('click',()=>{const s=c.getAttribute('aria-selected')==='true';document.querySelectorAll('.window-card').forEach(x=>x.setAttribute('aria-selected','false'));c.setAttribute('aria-selected',String(!s))});c.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();c.click()}});g.appendChild(c)})}
+
+  function addEv(type,msg){const log=document.getElementById('evlog');if(log.children.length===1&&log.children[0].querySelector('.event-time').textContent==='—')log.innerHTML='';const li=document.createElement('li');li.className='event-item';const col=EC[type]||EC.default,t=new Date().toLocaleTimeString('en-GB',{hour12:false});li.innerHTML=`<span class="event-type-dot" style="background:${col}" aria-hidden="true"></span><span class="event-time">${t}</span><span class="event-message">${msg}</span>`;log.prepend(li);while(log.children.length>50)log.removeChild(log.lastChild)}
+  function setSt(cls,lbl){document.getElementById('sdot').className='status-dot '+cls;document.getElementById('slabel').textContent=lbl}
+  function animC(id,target){const el=document.getElementById(id),s=parseInt(el.textContent)||0,d=target-s;if(!d)return;let i=0;const iv=setInterval(()=>{i++;el.textContent=Math.round(s+d*(i/20));if(i>=20)clearInterval(iv)},20)}
+  function updMet(d){if(d.active_nodes!=null){animC('v-nodes',d.active_nodes);document.getElementById('nbadge').textContent=d.active_nodes+' nodes'}if(d.active_edges!=null)animC('v-edges',d.active_edges);if(d.diagnostic_accuracy!=null)document.getElementById('v-acc').textContent=(d.diagnostic_accuracy*100).toFixed(1)+'%'}
+
+  async function fetchH(){if(DEMO){updMet({active_nodes:NODES.length,active_edges:EDGES.length,diagnostic_accuracy:.94});setSt('','Demo Mode');addEv('default','<strong>Demo mode</strong> — start FastAPI server for live data');return}try{const r=await fetch(`${API}/health`,{signal:AbortSignal.timeout(3000)}),d=await r.json();updMet(d);setSt('','Connected');addEv('cycle_completed',`<strong>Connected</strong> · ${d.active_nodes} nodes`)}catch{setSt('offline','Offline');addEv('error','Cannot reach backend — using demo data');updMet({active_nodes:NODES.length,active_edges:EDGES.length})}}
+
+  function connectSSE(){if(DEMO)return;const es=new EventSource(`${API}/stream`);es.addEventListener('cycle_started',ev=>{const d=JSON.parse(ev.data);addEv('cycle_started',`<strong>Cycle started</strong>`);resetPipe();document.getElementById('cbadge').textContent='running…'});es.addEventListener('cycle_completed',ev=>{const d=JSON.parse(ev.data);AGENTS.forEach(a=>setAS(a.id,'done'));document.getElementById('cbadge').textContent='done ✓';addEv('cycle_completed','<strong>Cycle complete</strong> ✓');if(d.payload?.diagnostic_accuracy)updMet({diagnostic_accuracy:d.payload.diagnostic_accuracy})});es.onopen=()=>setSt('','Live');es.onerror=()=>setSt('offline','Reconnecting…')}
+
+  async function runCycle(){const btn=document.getElementById('runbtn');btn.setAttribute('data-loading','true');btn.disabled=true;resetPipe();document.getElementById('cbadge').textContent='running…';document.getElementById('cprog').textContent='';
+    if(DEMO){addEv('cycle_started','<strong>Demo cycle</strong> — simulating 14 agents…');const dl=ms=>new Promise(r=>setTimeout(r,ms));for(let i=0;i<AGENTS.length;i++){setAS(AGENTS[i].id,'active');document.getElementById('cprog').textContent=`Step ${i+1}/${AGENTS.length}: ${AGENTS[i].name}`;addEv('agent_started',`<strong>${AGENTS[i].name}</strong> executing…`);await dl(240+Math.random()*180);setAS(AGENTS[i].id,'done');addEv('agent_completed',`<strong>${AGENTS[i].name}</strong> ✓`)}document.getElementById('cbadge').textContent='done ✓';document.getElementById('cprog').textContent='All agents complete';updMet({diagnostic_accuracy:.91+Math.random()*.07});btn.setAttribute('data-loading','false');btn.disabled=false;return}
+    try{const r=await fetch(`${API}/api/cycle/run`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:document.getElementById('ctx-role').textContent,task:document.getElementById('ctx-task').textContent,current_point:document.getElementById('ctx-focal').textContent,initial_depth:document.querySelector('.scope-btn.active')?.dataset.d||'D1'})});const d=await r.json();AGENTS.forEach(a=>setAS(a.id,'done'));document.getElementById('cbadge').textContent=d.cycle_id||'done ✓';if(d.performance_model?.diagnostic_accuracy)updMet({diagnostic_accuracy:d.performance_model.diagnostic_accuracy});addEv('cycle_completed',`<strong>Cycle complete</strong> — ${d.agent_count} agents`)}catch(e){addEv('error',`<strong>Error:</strong> ${e.message}`)}finally{btn.setAttribute('data-loading','false');btn.disabled=false}}
+
+  document.querySelectorAll('.scope-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.scope-btn').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false')});b.classList.add('active');b.setAttribute('aria-pressed','true')}));
+  document.getElementById('clrevt').addEventListener('click',()=>{document.getElementById('evlog').innerHTML='';addEv('default','Log cleared')});
+  document.getElementById('runbtn').addEventListener('click',runCycle);
+  let gi;
+  document.getElementById('domfilter').addEventListener('change',ev=>{if(gi)gi.filter(ev.target.value)});
+  new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');}}),{threshold:.08}).observe(document.body);
+  document.querySelectorAll('.reveal').forEach(el=>{new IntersectionObserver(([e])=>{if(e.isIntersecting){el.classList.add('visible')}},{threshold:.08}).observe(el)});
+
+  (async()=>{buildPipeline();buildWins();await fetchH();requestAnimationFrame(()=>requestAnimationFrame(()=>{gi=new G(document.getElementById('gsvg'),NODES,EDGES)}));connectSSE()})();
+  </script>
+</body>
+</html>
