@@ -1,0 +1,24 @@
+# Source-grounded bootstrap, 2026-09-09. Claims are not runtime verification.
+version: 1
+repository: davlindh/bart
+purpose: "Python implementation of scoped context resolution and agent orchestration, described by its workspace contracts."
+status: unverified
+canonical_parent: null
+successor: null
+capabilities: ["context-resolution","agent-orchestration"]
+vertical: context-and-orchestration
+omniframez_role: unclassified
+evidence:
+  confidence: inferred
+  sources: ["https://github.com/davlindh/bart/blob/f2151337d1f51afe9bf30e9689d854f8bb83424f/README.md", "https://github.com/davlindh/bart/blob/f2151337d1f51afe9bf30e9689d854f8bb83424f/src/context_engine/resolver.py"]
+harvest_action: inspect-computed-source-architecture
+relations:
+  - "Computed source maps are maintained in davlindh/ai-orchestration-hitl-consolen under docs/repository-knowledge-graph/code-analysis."
+  - "Purpose and capabilities summarize inspected declarations and source; runtime behavior, security and canonical ownership remain unverified."
+architecture:
+  observed_revision: f2151337d1f51afe9bf30e9689d854f8bb83424f
+  evidence_level: source-and-tree-observed
+  manifest_paths: ["fart/package.json","fart/pyproject.toml","requirements.txt"]
+  entry_point_candidates: ["fart/src/antigravity/mcp/server.py","src/server.py","src/web/app.js"]
+  scope: "All tracked files are covered by the central computed inventory; supported source languages are parsed separately."
+  verification_experiment: "Adding this declaration should move this repository from missing to parsed in the full inventory coverage report."
